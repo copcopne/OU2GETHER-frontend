@@ -1,8 +1,10 @@
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { Icon, IconButton, Text } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
+import Comment from "./Comment";
+import Stats from "./Stats";
 
 const Post: React.FC = () => {
     return (
@@ -17,7 +19,7 @@ const Post: React.FC = () => {
                         <Text style={PostStyle.date}>3 giờ trước</Text>
                     </View>
                 </View>
-
+                
                 <View>
                     <Text style={[PostStyle.content, PostStyle.m_v]} >Tôi chỉ là 1 con mèo</Text>
                     <Image 
@@ -25,12 +27,7 @@ const Post: React.FC = () => {
                         source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }} 
                     />
                 </View>
-
-                <View style={[PostStyle.r, PostStyle.stats]}>
-                    <Text style={PostStyle.m_h}>69 lượt thích</Text>
-                    <Text style={PostStyle.m_h}>69 bình luận</Text>
-                    <Text style={PostStyle.m_h}>69 chia sẻ</Text>
-                </View>
+                <Stats/>
 
                 <View style={[PostStyle.r, PostStyle.actions]}>
                     <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
@@ -47,8 +44,8 @@ const Post: React.FC = () => {
                     <IconButton icon="share" size={20}/>
                         <Text>Chia sẻ</Text>
                     </TouchableOpacity>
-                   
                 </View>
+                <Comment />
         </View>
     );
 }

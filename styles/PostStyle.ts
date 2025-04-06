@@ -11,14 +11,14 @@ export default StyleSheet.create({
     header: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 10,
+        marginBottom: 5,
     },
     content: {
-        fontSize: RFValue(14),
+        fontSize: RFValue(13),
     },
     avatar: {
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         borderRadius: 50,
         borderWidth: 2,
         borderColor: "#fff",
@@ -39,7 +39,7 @@ export default StyleSheet.create({
     attachment: {
         width: "100%",
         height: 250,
-        borderRadius: 16,
+        borderRadius: 8,
         marginVertical: 10,
     },
     r: {
@@ -50,7 +50,7 @@ export default StyleSheet.create({
         marginHorizontal: 5,
     },
     m_v: {
-        marginVertical: 5,
+        marginVertical: 3,
     },
     stats: {
         justifyContent: "flex-end",
@@ -58,7 +58,7 @@ export default StyleSheet.create({
     },
     actions: {
         justifyContent: "space-evenly",
-        marginTop: 10,
+        marginTop: 5,
         borderWidth: 1,
         borderLeftWidth: 0,
         borderRightWidth: 0,
