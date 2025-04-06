@@ -2,8 +2,10 @@ import { Image, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProfileStyle from "../../styles/ProfileStyle";
+import Post from "../post/Post";
+import React from "react";
 
-const Profile = () => {
+const Profile: React.FC = () => {
     return (
         <SafeAreaView style = {ProfileStyle.container}>
             <View>
@@ -28,6 +30,9 @@ const Profile = () => {
                     <Text style = {ProfileStyle.buttonText}>Chỉnh sửa thông tin cá nhân</Text>
                 </TouchableOpacity>
                 
+            </View>
+            <View style={ProfileStyle.m}>
+                <Post />
             </View>
         </SafeAreaView>
     );
