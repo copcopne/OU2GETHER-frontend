@@ -2,11 +2,10 @@ import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { Icon, IconButton, Text } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React from "react";
 import Comment from "./Comment";
 import Stats from "./Stats";
 
-const Post: React.FC = () => {
+const Post = () => {
     return (
         <View style={[PostStyle.container,  PostStyle.p]}>
                 <View style={PostStyle.header}>

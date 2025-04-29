@@ -1,8 +1,7 @@
-import React from 'react';
 import { Image, Text, View } from 'react-native';
 import PostStyle from '../../styles/PostStyle';
 import Stats from './Stats';
-const Comment: React.FC = () => {
+const Comment = () => {
     return (
         <View style={[PostStyle.container, PostStyle.r, PostStyle.p]}>
             <View>

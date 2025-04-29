@@ -3,9 +3,8 @@ import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProfileStyle from "../../styles/ProfileStyle";
 import Post from "../post/Post";
-import React from "react";
 
-const Profile: React.FC = () => {
+const Profile = () => {
     return (
         <SafeAreaView style={ProfileStyle.container}>
             <ScrollView>

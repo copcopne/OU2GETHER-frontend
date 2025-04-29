@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Text, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 
-const Login: React.FC = () => {
+const Login = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -18,7 +18,7 @@ const Login: React.FC = () => {
           label="Tên người dùng"
           mode="outlined"
           value={username}
-          onChangeText={(text: string) => setUsername(text)}
+          onChangeText={(text) => setUsername(text)}
           style={LoginStyle.input}
           left={<TextInput.Icon icon="account" />}
         />
@@ -27,7 +27,7 @@ const Login: React.FC = () => {
           label="Mật khẩu"
           mode="outlined"
           value={password}
-          onChangeText={(text: string) => setPassword(text)}
+          onChangeText={(text) => setPassword(text)}
           secureTextEntry={!showPassword}
           style={LoginStyle.input}
           left={<TextInput.Icon icon="lock" />}

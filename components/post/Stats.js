@@ -1,7 +1,6 @@
-import React from "react";
 import { Text, View } from "react-native";
 import PostStyle from "../../styles/PostStyle";
-const Interactions: React.FC = () => {
+const Interactions = () => {
     return (
         <View style={[PostStyle.r, PostStyle.stats]}>
                             <Text style={PostStyle.m_h}>69 lượt thích</Text>
