@@ -7,9 +7,9 @@ const LoginStyle = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 32,
     color: "#333",
   },

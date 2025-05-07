@@ -5,9 +5,9 @@ import { TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 
 const Login = () => {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <SafeAreaView style={[LoginStyle.container]}>

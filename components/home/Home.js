@@ -6,7 +6,7 @@ import PostStyle from "../../styles/PostStyle";
 import React from "react";
 
 const Home = () => {
-  const [selectedTab, setSelectedTab] = React.useState<"foryou" | "following">("foryou");
+  const [selectedTab, setSelectedTab] = React.useState("foryou");
 
   return (
     <SafeAreaView style={HomeStyle.container}>
