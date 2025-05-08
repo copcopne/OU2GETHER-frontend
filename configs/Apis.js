@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const BASE_URL = 'https://copcopne.pythonanywhere.com/'
+const BASE_URL = 'https://copcopne.pythonanywhere.com'
 export const endpoints = {
     // Users
     login: '/o/token',
@@ -59,10 +59,15 @@ export const endpoints = {
 
 }
 
+export const authApis = (token) => {
+    return axios.create({
+        baseURL: BASE_URL, 
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+}
+
 export default axios.create({
     baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    },
-})
+});
