@@ -26,16 +26,21 @@ export const endpoints = {
 
     // Posts
     posts: '/posts/',
+
     getPost: (post_id) => `/posts/${post_id}/`,
     deletePost: (post_id) => `/posts/${post_id}/delete_post/`,
     updatePost: (post_id) => `/posts/${post_id}/update_post/`,
     updatePostMediaUpload: (post_id) => `/posts/${post_id}/update_post/upload_media/`,
     updatePostDeleteMedia: (post_id, media_id) => `/posts/${post_id}/update_post/media/${media_id}/`,
+
     comment: (post_id) => `/posts/${post_id}/comment/`,
     getComments: (post_id) => `/posts/${post_id}/comments/`,
+
     vote: (post_id) => `/posts/${post_id}/vote/`,
+
     interactPost: (post_id, reaction) => `/posts/${post_id}/interact/${reaction}/`,
     PostInteractions: (post_id) => `/posts/${post_id}/interactions/`,
+    
     share: (post_id) => `/posts/${post_id}/share/`,
 
     // Comments
