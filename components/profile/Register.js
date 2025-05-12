@@ -1,17 +1,18 @@
-import { useState } from "react";
-import { Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
+import { Keyboard } from "react-native";
+import { useState, useRef } from "react";
+import { Text, View, TouchableOpacity, ScrollView, Image, Platform, Alert, KeyboardAvoidingView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from 'expo-image-picker';
-import { HelperText, TextInput, Button } from "react-native-paper";
+import {TextInput, Button, PaperProvider } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
-import ProfileStyle from "../../styles/ProfileStyle";
 import Apis, { endpoints } from "../../configs/Apis";
+import RegisterStyle from "../../styles/RegisterStyle";
+import { useNavigation } from "@react-navigation/native";
 
 const Register = () => {
   const [newUser, setNewUser] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const info = [
@@ -23,34 +24,91 @@ const Register = () => {
     { label: "Mật khẩu", field: "password", secureTextEntry: true },
     { label: "Nhập lại mật khẩu", field: "confirm", secureTextEntry: true },
   ];
+  const inputRefs = useRef({});
+  const isLast = (index) => index === info.length - 1;
+
+  const nav = useNavigation();
+
+  const onImagePress = (field) => {
+    if (newUser[field]) {
+      Alert.alert(
+        field === 'avatar' ? 'Ảnh đại diện' : 'Ảnh bìa',
+        'Bạn muốn làm gì?',
+        [
+          { text: 'Thay ảnh', onPress: () => handlePickImage(field) },
+          { text: 'Xoá ảnh', onPress: () => setNewUser({ ...newUser, [field]: null }) },
+          { text: 'Huỷ', style: 'cancel' }
+        ]
+      );
+    } else {
+      handlePickImage(field);
+    }
+  };
 
   const setState = (value, field) =>
     setNewUser({ ...newUser, [field]: value });
 
   const validate = () => {
     for (let i of info) {
-      if (!(i.field in newUser) || newUser[i.field] === "") {
-        setMsg(`Vui lòng nhập ${i.label}!`);
+      const value = newUser[i.field] || "";
+
+      if (value === "") {
+        Alert.alert(
+          "Thông báo",
+          `Vui lòng nhập ${i.label}!`,
+          [{
+            text: "OK",
+            onPress: () => setTimeout(() => {
+              inputRefs.current[i.field]?.focus();
+            }, 100)
+          }]
+        );
         return false;
       }
+      if (i.field === "member_id") {
+        if (!/^\d+$/.test(value)) {
+          Alert.alert("Thông báo", "Mã số sinh viên phải là số!", [
+            {
+              text: "OK",
+              onPress: () =>
+                setTimeout(() => {
+                  inputRefs.current["member_id"]?.focus();
+                }, 100),
+            },
+          ]);
+          return false;
+        }
+        if (value.length > 12) {
+          Alert.alert("Thông báo", "Mã số sinh viên tối đa 12 ký tự!", [
+            {
+              text: "OK",
+              onPress: () =>
+                setTimeout(() => {
+                  inputRefs.current["member_id"]?.focus();
+                }, 100),
+            },
+          ]);
+          return false;
+        }
+      }
     }
-    if (newUser.password !== newUser.confirm) {
-      setMsg("Mật khẩu không khớp!");
+
+    if (!newUser.avatar) {
+      Alert.alert("Thông báo", `Vui lòng nhập chọn ảnh đại diện!`);
       return false;
     }
-    setMsg(null);
+
+    if (newUser.password !== newUser.confirm) {
+      Alert.alert("Thông báo", "Mật khẩu không khớp!");
+      return false;
+    }
     return true;
   };
 
   const register = async () => {
     if (!validate()) return;
-
-    setLoading(true);
     try {
-      console.log("Posting to:", Apis.defaults.baseURL + endpoints.register);
-fetch(Apis.defaults.baseURL + endpoints.register)
-  .then(r => console.log("Ping OK", r.status))
-  .catch(e => console.log("Ping FAIL", e.message));
+      setLoading(true);
       let form = new FormData();
       for (let key in newUser) {
         if (key !== "confirm") {
@@ -58,114 +116,200 @@ fetch(Apis.defaults.baseURL + endpoints.register)
             form.append(key, {
               uri: newUser.avatar.uri,
               name: newUser.avatar.fileName,
-              type: newUser.avatar.type,
+              type: `${newUser.avatar.type}/${newUser.avatar.fileName.split(".").pop()}`,
             });
           } else {
             form.append(key, newUser[key]);
           }
         }
       }
-      try {
-        let res = await fetch('https://copcopne.pythonanywhere.com/users/register/', {
-          method: 'POST',
-          body: form
-        });
-        console.log('Fetch status', res.status);
-      } catch(e) {
-        console.log('Fetch error', e.message);
+      console.log("form:", form);
+      let res = await Apis.post(endpoints['register'], form, {
+        headers: {
+          "accept": 'application/json',
+          "content-Type": "multipart/form-data"
+        }
+      });
+
+      Alert.alert("Đăng ký thành công!", "Vui lòng chờ admin xác nhận tài khoản của bạn.");
+
+    } catch (error) {
+      let message = "";
+      
+      if (error.response && error.response.data) {
+        const data = error.response.data;
+        const firstKey = Object.keys(data)[0];
+        const errors = data[firstKey];
+
+        if (Array.isArray(errors)) {
+          message = errors.join("\n");
+        } else if (typeof errors === "string") {
+          message = errors;
+        } else {
+          message = JSON.stringify(errors);
+        }
       }
-    } catch (ex) {
-      console.error(ex);
-      setMsg("Đăng ký thất bại, thử lại sau nhé!");
+
+      else if (error.request && error.request._response) {
+        try {
+          const data = JSON.parse(error.request._response);
+          const firstKey = Object.keys(data)[0];
+          const errors = data[firstKey];
+          message = Array.isArray(errors)
+            ? errors.join("\n")
+            : typeof errors === "string"
+              ? errors
+              : JSON.stringify(errors);
+        } catch {
+          message = "Không xác định lỗi từ server.";
+        }
+      }
+      else {
+        message = error.message || "Đã có lỗi xảy ra.";
+      }
+
+      Alert.alert("Thông báo", message);
     } finally {
       setLoading(false);
     }
   };
 
-  const pick = async () => {
-    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Quyền bị từ chối!");
-      return;
+  const handlePickImage = async (field) => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.status !== 'granted') {
+        alert('Quyền truy cập ảnh bị từ chối');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: field === 'cover' ? [16, 9] : [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setState(result.assets[0], field);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
     }
-    const result = await ImagePicker.launchImageLibraryAsync();
-    if (!result.canceled) setState(result.assets[0], "avatar");
   };
 
   return (
-    <ScrollView>
-      <View style={LoginStyle.p}>
-        <Text style={LoginStyle.title}>
-          ĐĂNG KÝ TÀI KHOẢN OU2GETHER
-        </Text>
+    <PaperProvider>
+    <SafeAreaView style={RegisterStyle.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      ><ScrollView
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+        keyboardShouldPersistTaps="handled"
+      >
+          <Text style={LoginStyle.title}>
+            ĐĂNG KÝ TÀI KHOẢN OU2GETHER
+          </Text>
 
-        <HelperText type="error" visible={!!msg}>
-          {msg}
-        </HelperText>
+          <TouchableOpacity onPress={() => onImagePress('cover')}>
+            {newUser.cover ? (
+              <Image source={{ uri: newUser.cover.uri }} style={RegisterStyle.coverImage} />
+            ) : (
+              <View style={[RegisterStyle.coverImage, RegisterStyle.coverPlaceholder]}>
+                <Text style={RegisterStyle.coverText}>Chọn ảnh bìa</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-        {info.map((i) => {
-          const isPasswordField = i.field === "password";
-          const isConfirmField = i.field === "confirm";
-          const isSecure = i.secureTextEntry
-            ? isPasswordField
-              ? !showPassword
-              : !showConfirm
-            : false;
+          <View style={RegisterStyle.avatarContainer}>
+            <TouchableOpacity onPress={() => onImagePress('avatar')}>
+              {newUser.avatar ? (
+                <Image
+                  source={{ uri: newUser.avatar.uri }}
+                  style={RegisterStyle.avatar}
+                />
+              ) : (
+                <View style={[RegisterStyle.avatar, RegisterStyle.avatarPlaceholder]}>
+                  <Text style={RegisterStyle.avatarText}>Chọn hình đại diện</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
 
-          return (
-            <TextInput
-              key={i.field}
-              mode="outlined"
-              value={newUser[i.field] || ""}
-              onChangeText={(t) => setState(t, i.field)}
-              style={LoginStyle.input}
-              label={i.label}
-              secureTextEntry={i.secureTextEntry ? isSecure : false}
-              right={
-                i.secureTextEntry ? (
-                  <TextInput.Icon
-                    icon={
-                      (isPasswordField && showPassword) ||
-                      (isConfirmField && showConfirm)
-                        ? "eye-off"
-                        : "eye"
+          <View style={LoginStyle.p}>
+
+
+            {info.map((i, idx) => {
+              const isPasswordField = i.field === "password";
+              const isConfirmField = i.field === "confirm";
+              const isSecure = i.secureTextEntry
+                ? isPasswordField
+                  ? !showPassword
+                  : !showConfirm
+                : false;
+
+              return (
+                <TextInput
+                  key={i.field}
+                  ref={(el) => (inputRefs.current[i.field] = el)}
+                  mode="outlined"
+                  autoCapitalize= {(isPasswordField || isConfirmField) ? "none" : "sentences"}
+                  value={newUser[i.field] || ""}
+                  onChangeText={(t) => setState(t, i.field)}
+                  style={LoginStyle.input}
+                  label={i.label}
+                  secureTextEntry={i.secureTextEntry ? isSecure : false}
+                  right={
+                    i.secureTextEntry ? (
+                      <TextInput.Icon
+                        icon={
+                          (isPasswordField && showPassword) ||
+                            (isConfirmField && showConfirm)
+                            ? "eye-off"
+                            : "eye"
+                        }
+                        onPress={() => {
+                          if (isPasswordField) setShowPassword(!showPassword);
+                          if (isConfirmField) setShowConfirm(!showConfirm);
+                        }}
+                      />
+                    ) : null
+                  }
+                  returnKeyType={isLast(idx) ? "done" : "next"}
+                  onSubmitEditing={() => {
+                    if (!isLast(idx)) {
+                      // focus sang input tiếp theo
+                      const nextField = info[idx + 1].field;
+                      inputRefs.current[nextField]?.focus();
+                    } else {
+                      register();
+                      Keyboard.dismiss();
                     }
-                    onPress={() => {
-                      if (isPasswordField) setShowPassword(!showPassword);
-                      if (isConfirmField) setShowConfirm(!showConfirm);
-                    }}
-                  />
-                ) : null
-              }
-            />
-          );
-        })}
+                  }}
+                />
+              );
+            })}
 
-        <TouchableOpacity onPress={pick}>
-          <Text>Chọn ảnh đại diện...</Text>
-        </TouchableOpacity>
-        {newUser.avatar && (
-          <Image
-            source={{ uri: newUser.avatar.uri }}
-            style={ProfileStyle.avatar}
-          />
-        )}
+            <Button
+              mode="contained"
+              onPress={register}
+              disabled={loading}
+              loading={loading}
+            >
+              Đăng ký
+            </Button>
 
-        <Button
-          mode="contained"
-          onPress={register}
-          disabled={loading}
-          loading={loading}
-          style={LoginStyle.loginButton}
-        >
-          Đăng ký
-        </Button>
-
-        <TouchableOpacity style={LoginStyle.backButton}>
-          <Text style={LoginStyle.buttonText}>Quay lại</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            <TouchableOpacity 
+            style={LoginStyle.backButton}
+            onPress={() => nav.goBack()} 
+          >
+            <Text style={LoginStyle.buttonText}>Quay lại</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+    </PaperProvider>
   );
 };
 

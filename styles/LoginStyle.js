@@ -7,10 +7,10 @@ const LoginStyle = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
     textAlign: "left",
-    marginBottom: 32,
+    marginBottom: 16,
     color: "#333",
   },
   input: {
@@ -26,8 +26,8 @@ const LoginStyle = StyleSheet.create({
   },
   backButton: {
     backgroundColor: "#555",
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 10,
+    borderRadius: 24,
     alignItems: "center",
     marginTop: 16,
   },
@@ -38,7 +38,12 @@ const LoginStyle = StyleSheet.create({
   },
   p: {
     padding: 24,
-  },
+  }, 
+  subTitle: {
+    fontSize: 16,
+    textAlign: "left",
+    color: "#333",
+  }
 });
 
 export default LoginStyle;

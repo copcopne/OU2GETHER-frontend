@@ -3,7 +3,7 @@ import axios from "axios"
 const BASE_URL = 'https://copcopne.pythonanywhere.com'
 export const endpoints = {
     // Users
-    login: '/o/token',
+    login: '/o/token/',
     register: '/users/register/',
 
     users: '/users/',
@@ -11,15 +11,13 @@ export const endpoints = {
     getUserFollowers: (user_id) => `/users/${user_id}/followers/`,
     getUserFollowings: (user_id) => `/users/${user_id}/following/`,
     currentUser: '/users/current_user/',
-    currentUserFollowers: '/users/current_user/followers/',
-    currentUserFollowings: '/users/current_user/following/',
 
     blockUser: (user_id) => `/users/${user_id}/block_user/`,
     unblockUser: (user_id) => `/users/${user_id}/unblock_user/`,
 
     followUser: (user_id) => `/users/${user_id}/follow/`,
 
-    resetPasswordDeadline: (user_id, hours) => `/users/${user_id}reset_password_deadline/${hours}`,
+    resetPasswordDeadline: (user_id, hours) => `/users/${user_id}reset_password_deadline/${hours}/`,
 
     getUnverifiedUsers: '/users/unverified_users/',
     verify: (user_id) => `/users/${user_id}/verify/`,

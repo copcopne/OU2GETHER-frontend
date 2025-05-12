@@ -3,8 +3,15 @@ import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProfileStyle from "../../styles/ProfileStyle";
 import Post from "../post/Post";
+import { useContext } from "react";
+import { UserContext } from "../../configs/Contexts";
 
-const Profile = () => {
+const Profile = (userId) => {
+
+    const currentUser = useContext(UserContext);
+    const [profileData, setProfileData] = useState({});
+
+
     return (
         <SafeAreaView style={ProfileStyle.container}>
             <ScrollView>
