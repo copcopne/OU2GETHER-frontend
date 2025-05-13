@@ -20,7 +20,7 @@ export default StyleSheet.create({
         borderColor: "#fff",
     },
     name: {
-        fontSize: RFValue(20),
+        fontSize: RFValue(22),
         fontWeight: "bold",
     },
     bio: {
@@ -28,32 +28,35 @@ export default StyleSheet.create({
     },
     m: {
         marginHorizontal: 5,
-        marginTop: 8,
+        marginTop: 5,
     },
     username: {
         fontSize: RFValue(12),
         color: "#666",
-        marginLeft: 5,
+        marginLeft: 8,
     },
     followerAvatarContainer: {
         flexDirection: "row", 
         alignItems: "center",
+        marginTop: 5,
     },
     followerAvatar: {
-        width: 20,
-        height: 20,
-        borderRadius: 50,
-        borderWidth: 1,
-        borderColor: "#fff",
-        position: "absolute",
-        zIndex: 1,
-    },
-    secondFollowerAvatar: {
-        left: 10,
-    },
-    followersText: {
-        marginLeft: 32,
-    },
+  width: 20,
+  height: 20,
+  borderRadius: 50,
+  borderWidth: 1,
+  borderColor: "#fff",
+  marginRight: -5,
+  marginLeft: 5,
+},
+
+secondFollowerAvatar: {
+  marginLeft: -5,
+},
+
+followersText: {
+  marginLeft: 10,
+},
     r: {
         flexDirection: "row",
         alignItems: "center",
@@ -78,6 +81,7 @@ export default StyleSheet.create({
         flexDirection: 'row', 
         justifyContent: 'space-evenly',
         marginTop: 10,
+        marginBottom: 5,
     },
     postContainer: {
         borderTopWidth: 1,

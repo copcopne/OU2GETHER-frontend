@@ -9,10 +9,13 @@ import Login from './components/profile/Login';
 import Register from './components/profile/Register';
 import ChangePassword from './components/profile/ChangePassword';
 import { Icon, PaperProvider } from 'react-native-paper';
-import { DispatchContext, UserContext } from './configs/Contexts';
+import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contexts';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import Anonymous from './components/profile/Anonymous';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 
 const AuthTab = createNativeStackNavigator();
@@ -30,7 +33,7 @@ const AuthNavigator = () => {
 const Stack = createNativeStackNavigator();
 const StackNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="homestack" component={Home} options={{ title: "Trang chủ" }} />
       <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
       <Stack.Screen name="profile" component={Profile} options={{ title: "Trang cá nhân" }} />
@@ -54,20 +57,27 @@ const MainNavigator = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(UserReducer, null);
+
   return (
     <UserContext.Provider value={user}>
       <DispatchContext.Provider value={dispatch}>
+
         <PaperProvider>
-          <NavigationContainer>
-            {user
-              ? <MainNavigator />
-              : <AuthNavigator />}
-            <StatusBar style="auto" />
-          </NavigationContainer>
+          <SnackbarProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <SafeAreaProvider>
+                  <NavigationContainer>
+                    {user ? <MainNavigator /> : <AuthNavigator />}
+                  </NavigationContainer>
+                </SafeAreaProvider>
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+          </SnackbarProvider>
         </PaperProvider>
+
       </DispatchContext.Provider>
     </UserContext.Provider>
   );
 };
-
 export default App;

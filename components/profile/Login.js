@@ -1,7 +1,7 @@
 import { useContext, useRef, useState } from "react";
-import { Text, View, TouchableOpacity, Keyboard } from "react-native";
+import { Text, View, TouchableOpacity, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, Dialog, PaperProvider, Portal, TextInput } from "react-native-paper";
+import { Button, Dialog, Portal, TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Apis, { authApis, endpoints } from "../../configs/Apis";
@@ -119,8 +119,11 @@ const Login = () => {
   };
 
   return (
-    <SafeAreaView style={[LoginStyle.container]}>
-      <View style={LoginStyle.p}>
+    <KeyboardAvoidingView
+      style={[LoginStyle.p, LoginStyle.container]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+    >
         <Text style={LoginStyle.subTitle}>Đăng nhập vào</Text>
         <Text style={LoginStyle.title}>OU2GETHER</Text>
 
@@ -170,7 +173,6 @@ const Login = () => {
             />
           );
         })}
-
         <Portal>
           <Dialog visible={visible} onDismiss={hideDialog}>
             <Dialog.Title>Lỗi</Dialog.Title>
@@ -198,8 +200,8 @@ const Login = () => {
         >
           <Text style={LoginStyle.buttonText}>Quay lại</Text>
         </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+
+    </KeyboardAvoidingView>
   );
 };
 
