@@ -14,7 +14,7 @@ const PostDetail = ({ route }) => {
     <View style={PostStyle.header}>
                         <Image 
                             style={PostStyle.avatar} 
-                            source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }} 
+                            source={{ uri: postData?.author.avatar }} 
                         />
                         <View>
                             <Text style={PostStyle.name}>{postData?.author.last_name + " " + postData?.author.first_name}</Text>
