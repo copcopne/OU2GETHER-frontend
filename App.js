@@ -16,6 +16,7 @@ import Anonymous from './components/profile/Anonymous';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import PostDetail from './components/post/PostDetails';
 
 
 const AuthTab = createNativeStackNavigator();
@@ -34,9 +35,9 @@ const Stack = createNativeStackNavigator();
 const StackNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="homestack" component={Home} options={{ title: "Trang chủ" }} />
+      <Stack.Screen name="homeStack" component={Home} options={{ title: "Trang chủ" }} />
       <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
-      <Stack.Screen name="profile" component={Profile} options={{ title: "Trang cá nhân" }} />
+      <Stack.Screen name="postDetail" component={PostDetail} options={{ title: "Trang cá nhân" }} />
 
     </Stack.Navigator>
   );

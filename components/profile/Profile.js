@@ -52,7 +52,6 @@ const Profile = ({ route }) => {
     }, [userId, currentUser]);
 
     const handleFollow = async () => {
-        let userId = 5;
         const token = await AsyncStorage.getItem("token");
         const res = await authApis(token).post(endpoints['followUser'](userId));
         if (res.status === 200) {

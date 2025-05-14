@@ -26,6 +26,7 @@ const HomeStyle = StyleSheet.create({
     fontWeight: "bold",
   },
   feed: {
+    flex: 1,
     paddingHorizontal: 10,
   },
 });
