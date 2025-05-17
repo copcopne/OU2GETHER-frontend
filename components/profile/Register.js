@@ -123,7 +123,6 @@ const Register = () => {
           }
         }
       }
-      console.log("form:", form);
       let res = await Apis.post(endpoints['register'], form, {
         headers: {
           "accept": 'application/json',
@@ -132,7 +131,7 @@ const Register = () => {
       });
 
       Alert.alert("Đăng ký thành công!", "Vui lòng chờ admin xác nhận tài khoản của bạn.");
-
+      nav.goBack();
     } catch (error) {
       let message = "";
       
@@ -278,7 +277,6 @@ const Register = () => {
                   returnKeyType={isLast(idx) ? "done" : "next"}
                   onSubmitEditing={() => {
                     if (!isLast(idx)) {
-                      // focus sang input tiếp theo
                       const nextField = info[idx + 1].field;
                       inputRefs.current[nextField]?.focus();
                     } else {

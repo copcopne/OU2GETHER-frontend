@@ -33,30 +33,28 @@ export default StyleSheet.create({
     username: {
         fontSize: RFValue(12),
         color: "#666",
-        marginLeft: 8,
     },
     followerAvatarContainer: {
-        flexDirection: "row", 
+        flexDirection: "row",
         alignItems: "center",
-        marginTop: 5,
     },
     followerAvatar: {
-  width: 20,
-  height: 20,
-  borderRadius: 50,
-  borderWidth: 1,
-  borderColor: "#fff",
-  marginRight: -5,
-  marginLeft: 5,
-},
+        width: 20,
+        height: 20,
+        borderRadius: 50,
+        borderWidth: 1,
+        borderColor: "#fff",
+        marginRight: -5,
+    },
 
-secondFollowerAvatar: {
-  marginLeft: -5,
-},
+    secondFollowerAvatar: {
+        marginLeft: -5,
+    },
 
-followersText: {
-  marginLeft: 10,
-},
+    followersText: {
+        fontSize: RFValue(12),
+        color: "#666",
+    },
     r: {
         flexDirection: "row",
         alignItems: "center",
@@ -78,7 +76,7 @@ followersText: {
         paddingHorizontal: 5,
     },
     actions: {
-        flexDirection: 'row', 
+        flexDirection: 'row',
         justifyContent: 'space-evenly',
         marginTop: 10,
         marginBottom: 5,

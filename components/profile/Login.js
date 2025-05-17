@@ -90,15 +90,14 @@ const Login = () => {
           showDialog();
           return;
         }
-
+        if (userdata['must_change_password'] === true) {
+          nav.navigate('changePassword', {userdata, forceChangePassword:true});
+          return;
+        }
         dispatch({
           'type': 'login',
           'payload': userdata
         });
-
-        if (userdata['must_change_password'] === true) {
-          nav.navigate('changePassword');
-        }
 
       } catch (ex) {
         if (ex.response?.status === 400) {

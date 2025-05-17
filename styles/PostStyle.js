@@ -3,10 +3,7 @@ import { RFValue } from "react-native-responsive-fontsize";
 
 export default StyleSheet.create({
     container: {
-        // borderRadius: 16,
-        // borderWidth: 2,
-        // borderColor: "#ddd",
-        // backgroundColor: "#fff",
+        margin: 10
     },
     header: {
         flexDirection: "row",
@@ -33,8 +30,8 @@ export default StyleSheet.create({
         color: "#666",
     },
     p: {
-        paddingVertical: 5,
-        paddingHorizontal: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 5,
     },
     attachment: {
         width: "100%",
@@ -64,7 +61,4 @@ export default StyleSheet.create({
         borderRightWidth: 0,
         borderColor: "#ddd",
     },
-    button: {
-        backgroundColor: "#fff",
-    }
 });

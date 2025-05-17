@@ -1,27 +1,29 @@
 import { Image, Text, View } from 'react-native';
 import PostStyle from '../../styles/PostStyle';
-import Stats from './Stats';
-const Comment = () => {
+import dayjs from 'dayjs';
+const Comment = ({commentData}) => {
     return (
-        <View style={[PostStyle.container, PostStyle.r, PostStyle.p]}>
+        <View style={[PostStyle.r, PostStyle.p]}>
             <View>
                 <Image 
                     style={PostStyle.avatar}
-                    source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }} 
+                    source={{ uri: commentData?.author.avatar }} 
                 />
             </View>
 
             <View>
-                <View style={PostStyle.r}>
-                    <Text style={PostStyle.name}>Nguyễn Văn A</Text>
-                    <Text style={PostStyle.date}>3 giờ trước</Text>
-                </View>
                 <View>
-                    <Text style={[PostStyle.content, PostStyle.m_v]} >Tôi chỉ là 1 con mèo đang bình luận.</Text>
-                </View>
-                <Stats/>
+                    <Text style={PostStyle.name}>{`${commentData?.author.last_name} ${commentData?.author.first_name} ${commentData?.is_edited === true ? '(đã chỉnh sửa)' : ''}`}</Text>
+                    <Text style={[PostStyle.content, PostStyle.m_v]} >{commentData?.content}</Text>
+                    </View>
+                    <View style ={{flexDirection: "row"}}>
+                    <Text style={PostStyle.date}>{`${dayjs(commentData?.created_at).fromNow(true)}`}</Text>
+                    <Text>Thích</Text>
+                    <Text>Trả lời</Text>
+                    </View>
             </View>
         </View>
+        
     );
 }
 export default Comment;

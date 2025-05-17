@@ -11,47 +11,118 @@ import ChangePassword from './components/profile/ChangePassword';
 import { Icon, PaperProvider } from 'react-native-paper';
 import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contexts';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import Anonymous from './components/profile/Anonymous';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PostDetail from './components/post/PostDetails';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import Setting from './components/home/Setting';
 
 
-const AuthTab = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
   return (
-    <AuthTab.Navigator screenOptions={{ headerShown: false }} initialRouteName='anonymous'>
-      <AuthTab.Screen name="anonymous" component={Anonymous} options={{ title: "Chào mừng bạn đến với OU2GETHER" }} />
-      <AuthTab.Screen name="login" component={Login} options={{ title: "Đăng nhập" }} />
-      <AuthTab.Screen name="register" component={Register} options={{ title: "Đăng ký" }} />
-      <AuthTab.Screen name="changePassword" component={ChangePassword} options={{ title: "Đổi mật khẩu" }} />
-    </AuthTab.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='anonymous'>
+      <Stack.Screen name="anonymous" component={Anonymous} options={{ title: "Chào mừng bạn đến với OU2GETHER" }} />
+      <Stack.Screen name="login" component={Login} options={{ title: "Đăng nhập" }} />
+      <Stack.Screen name="register" component={Register} options={{ title: "Đăng ký" }} />
+      <Stack.Screen name="changePassword" component={ChangePassword} options={{ title: "Đổi mật khẩu" }} />
+    </Stack.Navigator>
   );
 }
 
-const Stack = createNativeStackNavigator();
-const StackNavigator = () => {
+const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="homeStack" component={Home} options={{ title: "Trang chủ" }} />
-      <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
-      <Stack.Screen name="postDetail" component={PostDetail} options={{ title: "Trang cá nhân" }} />
-
+      <Stack.Screen
+        name="postDetail"
+        component={PostDetail}
+        options={{
+          title: "Chi tiết bài viết",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
+      <Stack.Screen
+        name="profileStack"
+        component={Profile}
+        options={{
+          title: "Trang cá nhân",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
     </Stack.Navigator>
   );
 };
-
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="profileStack"
+        component={Profile}
+        options={({ route }) => ({
+          title: "Trang cá nhân",
+          headerShown: route.params?.showHeader === true,
+          headerBackTitleVisible: false
+        })} />
+      <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
+      <Stack.Screen
+        name="postDetail"
+        component={PostDetail}
+        options={{
+          title: "Chi tiết bài viết",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
+    </Stack.Navigator>
+  );
+};
+const SettingStack = () => {
+  return (
+  <Stack.Navigator screenOptions={{ headerShown: true }}>
+    <Stack.Screen
+      name="settingStack"
+      component={Setting}
+      options={{
+        title: "Cài đặt"
+      }} />
+    <Stack.Screen 
+      name="changePassword" 
+      component={ChangePassword} 
+      options={{ 
+        title: "Đổi mật khẩu"
+        }} />
+  </Stack.Navigator>)
+}
 const Tab = createBottomTabNavigator();
 const MainNavigator = () => {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false, tabBarStyle: { position: "absolute", bottom: 0, left: 0, right: 0, elevation: 0, backgroundColor: "#fff", borderTopWidth: 0 } }} initialRouteName='home'>
-      <Tab.Screen name="home" component={StackNavigator} options={{ title: "Trang chủ", tabBarIcon: () => <Icon size={30} source="home" /> }} />
+    <Tab.Navigator
+      screenOptions={({ route }) => {
+        const routeName = getFocusedRouteNameFromRoute(route) ?? (route.name === 'home' ? 'homeStack' : 'profileStack');
+        return {
+          headerShown: false,
+          tabBarStyle: {
+            display: routeName === 'postDetail' ? 'none' : 'flex',
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            elevation: 0,
+            backgroundColor: "#fff",
+            borderTopWidth: 0
+          }
+        };
+      }}
+      initialRouteName='home'
+    >
+      <Tab.Screen name="home" component={HomeStack} options={{ title: "Trang chủ", tabBarIcon: () => <Icon size={30} source="home" /> }} />
       {/* <Tab.Screen name="search" options={{ title: "Tìm kiếm", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
       {/* <Tab.Screen name="createPost" options={{ title: "Tạo bài viết mới", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
       {/* <Tab.Screen name="chat" component={Profile} options={{ title: "Tin nhắn", tabBarIcon: () => <Icon size={30} source="account" /> }} /> */}
-      <Tab.Screen name="profile" component={Profile} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
+      <Tab.Screen name="profile" component={ProfileStack} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
+      <Tab.Screen name="setting" component={SettingStack} options={{title: "Cài đặt", tabBarIcon: () => <Icon size={30} source="cog" />}}/>
     </Tab.Navigator>
   );
 };
