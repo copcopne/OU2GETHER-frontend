@@ -17,7 +17,11 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PostDetail from './components/post/PostDetails';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import Setting from './components/home/Setting';
+import Setting from './components/setting/Setting';
+import Stats from './components/setting/Stats';
+import Invite from './components/setting/Inivte';
+import VerifyUser from './components/setting/VerifyUser';
+import CreateUser from './components/setting/CreateUser';
 
 
 const Stack = createNativeStackNavigator();
@@ -92,6 +96,30 @@ const SettingStack = () => {
       component={ChangePassword} 
       options={{ 
         title: "Đổi mật khẩu"
+        }} />
+        <Stack.Screen 
+      name="stats" 
+      component={Stats} 
+      options={{ 
+        title: "Thống kê hệ thống"
+        }} />
+        <Stack.Screen 
+      name="invite" 
+      component={Invite} 
+      options={{ 
+        title: "Tạo thư mời"
+        }} />
+        <Stack.Screen 
+      name="verifyUser" 
+      component={VerifyUser} 
+      options={{ 
+        title: "Xác nhận người dùng"
+        }} />
+        <Stack.Screen 
+      name="createUser" 
+      component={CreateUser} 
+      options={{ 
+        title: "Tạo người dùng mới"
         }} />
   </Stack.Navigator>)
 }

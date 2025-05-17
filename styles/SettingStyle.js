@@ -4,10 +4,11 @@ export default StyleSheet.create({
     button: {
         backgroundColor: "#fff",
         paddingVertical: 7,
-        borderRadius: 10,
+        borderRadius: 16,
         borderWidth: 1,
         borderColor: "#ccc",
-        margin: 5
+        marginVertical: 8,
+        marginHorizontal: 10
     },
     buttonText: {
         color: "#000",
