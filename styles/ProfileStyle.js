@@ -22,6 +22,9 @@ export default StyleSheet.create({
     name: {
         fontSize: RFValue(22),
         fontWeight: "bold",
+        flexShrink: 1, 
+        flexWrap: "wrap", 
+        maxWidth: "70%"
     },
     bio: {
         fontSize: RFValue(13),

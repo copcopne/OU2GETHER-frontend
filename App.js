@@ -8,21 +8,21 @@ import Profile from './components/profile/Profile';
 import Login from './components/profile/Login';
 import Register from './components/profile/Register';
 import ChangePassword from './components/profile/ChangePassword';
-import { Icon, PaperProvider } from 'react-native-paper';
-import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contexts';
-import { NavigationContainer } from '@react-navigation/native';
-import Anonymous from './components/profile/Anonymous';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import PostDetail from './components/post/PostDetails';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import Setting from './components/setting/Setting';
 import Stats from './components/setting/Stats';
 import Invite from './components/setting/Inivte';
 import VerifyUser from './components/setting/VerifyUser';
 import CreateUser from './components/setting/CreateUser';
 import CreatePost from './components/post/CreatePost';
+import Anonymous from './components/profile/Anonymous';
+import PostDetail from './components/post/PostDetails';
+import { Icon, PaperProvider } from 'react-native-paper';
+import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contexts';
+import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 
 const Stack = createNativeStackNavigator();
@@ -80,13 +80,13 @@ const ProfileStack = () => {
           headerBackTitleVisible: false
         })} />
       <Stack.Screen
-      name="createPost"
-      component={CreatePost}
-      options={{
-        title: "Tạo bài viết mới",
-        headerShown: true,
-        headerBackTitleVisible: false
-      }} />
+        name="createPost"
+        component={CreatePost}
+        options={{
+          title: "Tạo bài viết mới",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
       <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
       <Stack.Screen
         name="postDetail"
@@ -101,44 +101,44 @@ const ProfileStack = () => {
 };
 const SettingStack = () => {
   return (
-  <Stack.Navigator screenOptions={{ headerShown: true }}>
-    <Stack.Screen
-      name="settingStack"
-      component={Setting}
-      options={{
-        title: "Cài đặt"
-      }} />
-    <Stack.Screen 
-      name="changePassword" 
-      component={ChangePassword} 
-      options={{ 
-        title: "Đổi mật khẩu"
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      <Stack.Screen
+        name="settingStack"
+        component={Setting}
+        options={{
+          title: "Cài đặt"
         }} />
-        <Stack.Screen 
-      name="stats" 
-      component={Stats} 
-      options={{ 
-        title: "Thống kê hệ thống"
+      <Stack.Screen
+        name="changePassword"
+        component={ChangePassword}
+        options={{
+          title: "Đổi mật khẩu"
         }} />
-        <Stack.Screen 
-      name="invite" 
-      component={Invite} 
-      options={{ 
-        title: "Tạo thư mời"
+      <Stack.Screen
+        name="stats"
+        component={Stats}
+        options={{
+          title: "Thống kê hệ thống"
         }} />
-        <Stack.Screen 
-      name="verifyUser" 
-      component={VerifyUser} 
-      options={{ 
-        title: "Xác nhận người dùng"
+      <Stack.Screen
+        name="invite"
+        component={Invite}
+        options={{
+          title: "Tạo thư mời"
         }} />
-        <Stack.Screen 
-      name="createUser" 
-      component={CreateUser} 
-      options={{ 
-        title: "Tạo người dùng mới"
+      <Stack.Screen
+        name="verifyUser"
+        component={VerifyUser}
+        options={{
+          title: "Xác nhận người dùng"
         }} />
-  </Stack.Navigator>)
+      <Stack.Screen
+        name="createUser"
+        component={CreateUser}
+        options={{
+          title: "Tạo người dùng mới"
+        }} />
+    </Stack.Navigator>)
 }
 const Tab = createBottomTabNavigator();
 const MainNavigator = () => {
@@ -167,7 +167,7 @@ const MainNavigator = () => {
       {/* <Tab.Screen name="createPost" options={{ title: "Tạo bài viết mới", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
       {/* <Tab.Screen name="chat" component={Profile} options={{ title: "Tin nhắn", tabBarIcon: () => <Icon size={30} source="account" /> }} /> */}
       <Tab.Screen name="profile" component={ProfileStack} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
-      <Tab.Screen name="setting" component={SettingStack} options={{title: "Cài đặt", tabBarIcon: () => <Icon size={30} source="cog" />}}/>
+      <Tab.Screen name="setting" component={SettingStack} options={{ title: "Cài đặt", tabBarIcon: () => <Icon size={30} source="cog" /> }} />
     </Tab.Navigator>
   );
 };
@@ -176,23 +176,23 @@ const App = () => {
   const [user, dispatch] = useReducer(UserReducer, null);
 
   return (
-    <UserContext.Provider value={user}>
-      <DispatchContext.Provider value={dispatch}>
-
-        <PaperProvider>
-          <SnackbarProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <BottomSheetModalProvider>
+    <SafeAreaView style={{ flex: 1 }}>
+      <UserContext.Provider value={user}>
+        <DispatchContext.Provider value={dispatch}>
+          <PaperProvider>
+            <SnackbarProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
                   <NavigationContainer>
                     {user ? <MainNavigator /> : <AuthNavigator />}
                   </NavigationContainer>
-              </BottomSheetModalProvider>
-            </GestureHandlerRootView>
-          </SnackbarProvider>
-        </PaperProvider>
-
-      </DispatchContext.Provider>
-    </UserContext.Provider>
+                </BottomSheetModalProvider>
+              </GestureHandlerRootView>
+            </SnackbarProvider>
+          </PaperProvider>
+        </DispatchContext.Provider>
+      </UserContext.Provider>
+    </SafeAreaView>
   );
 };
 export default App;

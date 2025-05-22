@@ -196,7 +196,6 @@ const Register = () => {
   };
 
   return (
-    <PaperProvider>
     <SafeAreaView style={RegisterStyle.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -307,7 +306,6 @@ const Register = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-    </PaperProvider>
   );
 };
 

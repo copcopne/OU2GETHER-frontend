@@ -15,7 +15,6 @@ import EditProfile from "./EditProfile";
 import * as ImagePicker from "expo-image-picker";
 import LoginStyle from "../../styles/LoginStyle";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { SafeAreaView } from "react-native-safe-area-context";
 import PostStyle from "../../styles/PostStyle";
 import { useNavigation } from "@react-navigation/native";
 
@@ -39,6 +38,7 @@ const Profile = React.memo(({ route }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [firstLoadDone,  setFirstLoadDone] = useState(false);
   const showUploadAlert = (type) => {
     Alert.alert(type === "avatar" ? "Ảnh đại diện" : "Ảnh bìa", "Bạn muốn làm gì", [
       { text: "Thay đổi", onPress: () => handleMediaUpload(type) },
@@ -79,6 +79,38 @@ const Profile = React.memo(({ route }) => {
     }
   };
 
+  const loadProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      let res = ''
+      if (!userId) {
+        res = await authApis(token).get(endpoints["currentUser"]);
+      }
+      else {
+        res = await authApis(token).get(endpoints["getUser"](userId));
+      }
+      if (res.data.number_of_followers > 0) {
+        const followers = await authApis(token).get(
+          endpoints["getUserFollowers"](res.data.id)
+        );
+        setMinimalFollowers(followers.data.results);
+      }
+      setProfileData(res.data);
+      setFirstLoadDone(true);
+    } catch (err) {
+      console.error("Lỗi mạng:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  useEffect(() => {
+    if (page > 0)
+      fetchPosts();
+  }, [page])
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
@@ -100,12 +132,7 @@ const Profile = React.memo(({ route }) => {
       setRefreshing(false);
     }
   }
-
-  useEffect(() => {
-    if (page > 0)
-      fetchPosts();
-  }, [page])
-
+  
   const fetchMore = () => {
     if (!loading && !refreshing && page > 0 && post.length > 0)
       setPage(page + 1);
@@ -164,32 +191,6 @@ const Profile = React.memo(({ route }) => {
     }
   };
 
-  const loadProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      let res = ''
-      if (!userId) {
-        res = await authApis(token).get(endpoints["currentUser"]);
-      }
-      else {
-        res = await authApis(token).get(endpoints["getUser"](userId));
-      }
-      if (res.data.number_of_followers > 0) {
-        const followers = await authApis(token).get(
-          endpoints["getUserFollowers"](res.data.id)
-        );
-        setMinimalFollowers(followers.data.results);
-      }
-      setProfileData(res.data);
-    } catch (err) {
-      console.error("Lỗi mạng:", err);
-    }
-  };
-
-  useEffect(() => {
-    loadProfile();
-  }, [currentUser]);
-
   const handleFollow = async () => {
     const token = await AsyncStorage.getItem("token");
     const res = await authApis(token).post(endpoints["followUser"](userId));
@@ -236,92 +237,96 @@ const Profile = React.memo(({ route }) => {
             }
           />
         </TouchableOpacity>
-        <View style={ProfileStyle.m}>
-          <Text
-            style={[
-              ProfileStyle.name,
-              ProfileStyle.m,
-              { flexShrink: 1, flexWrap: "wrap", maxWidth: "70%" },
-            ]}
-          >
-            {profileData?.last_name + " " + profileData?.first_name}
-          </Text>
-          <Text style={[ProfileStyle.m, ProfileStyle.username]}>
-            {profileData?.username}
-          </Text>
-          {profileData?.bio ? (
-            <Text style={[ProfileStyle.bio, ProfileStyle.m]}>
-              {profileData?.bio}
-            </Text>
-          ) : (
-            <></>
-          )}
 
-          <TouchableOpacity
-            style={[ProfileStyle.followerAvatarContainer, ProfileStyle.m]}
-          >
-            {profileData.number_of_followers > 0 &&
-              minimalFollowers.map((follower, index) => {
-                if (index < 2) {
-                  return (
-                    <Image
-                      key={index}
-                      style={[
-                        ProfileStyle.followerAvatar,
-                        index === 1 ? ProfileStyle.secondFollowerAvatar : {},
-                      ]}
-                      source={
-                        follower?.avatar
-                          ? { uri: follower.avatar }
-                          : require("../../assets/default-avatar.jpg")
-                      }
-                    />
-                  );
-                }
-              })}
+        {firstLoadDone ? <>
+          <View style={ProfileStyle.m}>
             <Text
               style={[
-                ProfileStyle.followersText,
-                profileData.number_of_followers > 0
-                  ? { marginLeft: 10 }
-                  : null,
+                ProfileStyle.name,
+                ProfileStyle.m,
               ]}
             >
-              {profileData.number_of_followers} người theo dõi
+              {profileData?.last_name + " " + profileData?.first_name}
             </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={[ProfileStyle.r, ProfileStyle.actions]}>
-          {profileData?.is_myself ? (
+            <Text style={[ProfileStyle.m, ProfileStyle.username]}>
+              {profileData?.username}
+            </Text>
+            {profileData?.bio ? (
+              <Text style={[ProfileStyle.bio, ProfileStyle.m]}>
+                {profileData?.bio}
+              </Text>
+            ) : (
+              <></>
+            )}
+
             <TouchableOpacity
-              style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-              onPress={handlePresentModalPress}
+              style={[ProfileStyle.followerAvatarContainer, ProfileStyle.m]}
             >
-              <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-                Chỉnh sửa thông tin cá nhân
+              {profileData.number_of_followers > 0 &&
+                minimalFollowers.map((follower, index) => {
+                  if (index < 2) {
+                    return (
+                      <Image
+                        key={index}
+                        style={[
+                          ProfileStyle.followerAvatar,
+                          index === 1 ? ProfileStyle.secondFollowerAvatar : {},
+                        ]}
+                        source={
+                          follower?.avatar
+                            ? { uri: follower.avatar }
+                            : require("../../assets/default-avatar.jpg")
+                        }
+                      />
+                    );
+                  }
+                })}
+              <Text
+                style={[
+                  ProfileStyle.followersText,
+                  profileData.number_of_followers > 0
+                    ? { marginLeft: 10 }
+                    : null,
+                ]}
+              >
+                {profileData.number_of_followers} người theo dõi
               </Text>
             </TouchableOpacity>
-          ) : (
-            <>
+
+          </View>
+          <View style={[ProfileStyle.r, ProfileStyle.actions]}>
+            {profileData?.is_myself ? (
               <TouchableOpacity
                 style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-                onPress={() => handleFollow()}
+                onPress={handlePresentModalPress}
               >
                 <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-                  {profileData?.is_following ? "Bỏ theo dõi" : "Theo dõi"}
+                  Chỉnh sửa thông tin cá nhân
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-              >
-                <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-                  Nhắn tin
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-        {profileData?.is_myself ? <TouchableOpacity 
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
+                  onPress={() => handleFollow()}
+                >
+                  <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
+                    {profileData?.is_following ? "Bỏ theo dõi" : "Theo dõi"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
+                >
+                  <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
+                    Nhắn tin
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </> :
+          <Text style={[ProfileStyle.name, ProfileStyle.m]}>Đang tải thông tin cá nhân</Text>}
+        {profileData?.is_myself ? <TouchableOpacity
           style={[PostStyle.createPostButton, PostStyle.p, PostStyle.m_v]}
           onPress={() => nav.navigate("createPost", {
             onGoBack: (newPost) => {
@@ -342,8 +347,7 @@ const Profile = React.memo(({ route }) => {
     )
   };
   return (
-    <SafeAreaView>
-      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+    <>
       <FlatList
         style={{ padding: 0 }}
         ListFooterComponent={loading && <ActivityIndicator />}
@@ -377,7 +381,7 @@ const Profile = React.memo(({ route }) => {
           </BottomSheetView>
         </BottomSheetModal>
       )}
-    </SafeAreaView>
+    </>
   );
 });
 

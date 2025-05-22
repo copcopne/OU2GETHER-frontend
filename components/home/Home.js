@@ -141,7 +141,7 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={HomeStyle.container}>
+    <View style={HomeStyle.container}>
       <TouchableOpacity
         onPress={() => {
           scrollToTop();
@@ -195,7 +195,7 @@ const Home = () => {
         onEndReached={fetchMore}
         onEndReachedThreshold={0.7}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
