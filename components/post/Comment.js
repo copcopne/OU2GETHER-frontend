@@ -1,4 +1,4 @@
-import { Image, Text, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import PostStyle from '../../styles/PostStyle';
 import dayjs from 'dayjs';
 const Comment = ({commentData}) => {
@@ -18,8 +18,7 @@ const Comment = ({commentData}) => {
                     </View>
                     <View style ={{flexDirection: "row"}}>
                     <Text style={PostStyle.date}>{`${dayjs(commentData?.created_at).fromNow(true)}`}</Text>
-                    <Text>Thích</Text>
-                    <Text>Trả lời</Text>
+                    <TouchableOpacity><Text>Thích</Text></TouchableOpacity>
                     </View>
             </View>
         </View>

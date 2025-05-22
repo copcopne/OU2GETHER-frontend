@@ -22,6 +22,7 @@ import Stats from './components/setting/Stats';
 import Invite from './components/setting/Inivte';
 import VerifyUser from './components/setting/VerifyUser';
 import CreateUser from './components/setting/CreateUser';
+import CreatePost from './components/post/CreatePost';
 
 
 const Stack = createNativeStackNavigator();
@@ -40,6 +41,14 @@ const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="homeStack" component={Home} options={{ title: "Trang chủ" }} />
+      <Stack.Screen
+        name="createPost"
+        component={CreatePost}
+        options={{
+          title: "Tạo bài viết mới",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
       <Stack.Screen
         name="postDetail"
         component={PostDetail}
@@ -70,6 +79,14 @@ const ProfileStack = () => {
           headerShown: route.params?.showHeader === true,
           headerBackTitleVisible: false
         })} />
+      <Stack.Screen
+      name="createPost"
+      component={CreatePost}
+      options={{
+        title: "Tạo bài viết mới",
+        headerShown: true,
+        headerBackTitleVisible: false
+      }} />
       <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
       <Stack.Screen
         name="postDetail"
@@ -166,11 +183,9 @@ const App = () => {
           <SnackbarProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <BottomSheetModalProvider>
-                <SafeAreaProvider>
                   <NavigationContainer>
                     {user ? <MainNavigator /> : <AuthNavigator />}
                   </NavigationContainer>
-                </SafeAreaProvider>
               </BottomSheetModalProvider>
             </GestureHandlerRootView>
           </SnackbarProvider>

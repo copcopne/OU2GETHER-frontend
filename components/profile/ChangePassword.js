@@ -11,7 +11,6 @@ import { DispatchContext } from "../../configs/Contexts";
 
 const ChangePassword = ({ route }) => {
     const { userdata, forceChangePassword = false } = route.params || {};
-    const defaultPassword = "ou@123";
     const dispatch = useContext(DispatchContext);
     const nav = useNavigation();
     const info = [{

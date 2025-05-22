@@ -1,5 +1,5 @@
-import { Alert, FlatList, Image, SafeAreaView, ScrollView, StatusBar, TouchableOpacity, View } from "react-native";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { Alert, FlatList, Image, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import ProfileStyle from "../../styles/ProfileStyle";
 import Post from "../post/Post";
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
@@ -15,8 +15,12 @@ import EditProfile from "./EditProfile";
 import * as ImagePicker from "expo-image-picker";
 import LoginStyle from "../../styles/LoginStyle";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PostStyle from "../../styles/PostStyle";
+import { useNavigation } from "@react-navigation/native";
 
 const Profile = React.memo(({ route }) => {
+  const nav = useNavigation();
   const tabBarHeight = useBottomTabBarHeight();
   const { setSnackbar } = useContext(SnackbarContext);
   const bottomSheetModalRef = useRef(null);
@@ -43,6 +47,7 @@ const Profile = React.memo(({ route }) => {
   };
 
   const fetchPosts = async () => {
+    let res
     try {
       setLoading(true);
       let url = `${endpoints['posts']}`;
@@ -52,17 +57,13 @@ const Profile = React.memo(({ route }) => {
       } else url = `${url}?userId=${userId}`;
       if (page > 0)
         url = `${url}&page=${page}`;
-
       const token = await AsyncStorage.getItem('token');
-      const res = await authApis(token).get(url);
+      res = await authApis(token).get(url);
 
       if (page === 1)
         setPost(res.data.results);
       else
         setPost([...post, ...res.data.results]);
-
-      if (res.data.next === null)
-        setPage(0);
 
     } catch (error) {
       setSnackbar({
@@ -73,18 +74,20 @@ const Profile = React.memo(({ route }) => {
       console.log(error.response.data);
     } finally {
       setLoading(false);
+      if (res.data.next === null)
+        setPage(0);
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      loadProfile();
+      await loadProfile();
       setPost([]);
       if (page !== 1) {
         setPage(1);
       } else {
-        fetchPosts();
+        await fetchPosts();
       }
     } catch (error) {
       setSnackbar({
@@ -104,7 +107,7 @@ const Profile = React.memo(({ route }) => {
   }, [page])
 
   const fetchMore = () => {
-    if (!loading && !refreshing && page > 0)
+    if (!loading && !refreshing && page > 0 && post.length > 0)
       setPage(page + 1);
   }
   const handleMediaUpload = async (type) => {
@@ -171,21 +174,21 @@ const Profile = React.memo(({ route }) => {
       else {
         res = await authApis(token).get(endpoints["getUser"](userId));
       }
-        if (res.data.number_of_followers > 0) {
-          const followers = await authApis(token).get(
-            endpoints["getUserFollowers"](res.data.id)
-          );
-            setMinimalFollowers(followers.data.results);
-        }
-        setProfileData(res.data);
+      if (res.data.number_of_followers > 0) {
+        const followers = await authApis(token).get(
+          endpoints["getUserFollowers"](res.data.id)
+        );
+        setMinimalFollowers(followers.data.results);
+      }
+      setProfileData(res.data);
     } catch (err) {
       console.error("Lỗi mạng:", err);
     }
   };
 
-useEffect(() => {
-  loadProfile();
-}, [userId, currentUser, profileData]);
+  useEffect(() => {
+    loadProfile();
+  }, [currentUser]);
 
   const handleFollow = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -210,113 +213,134 @@ useEffect(() => {
   };
 
   const renderHeader = () => {
-    return <><TouchableOpacity onPress={() => showUploadAlert("cover")}>
-      <Image
-        style={ProfileStyle.cover}
-        source={
-          profileData?.cover
-            ? { uri: profileData.cover }
-            : require("../../assets/default-cover.png")
-        }
-      />
-    </TouchableOpacity>
+    return (
+      <>
+        <TouchableOpacity onPress={profileData?.is_myself ? () => showUploadAlert("cover") : null}>
+          <Image
+            style={ProfileStyle.cover}
+            source={
+              profileData?.cover
+                ? { uri: profileData.cover }
+                : require("../../assets/default-cover.png")
+            }
+          />
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => showUploadAlert("avatar")}>
-        <Image
-          style={ProfileStyle.avatar}
-          source={
-            profileData?.avatar
-              ? { uri: profileData.avatar }
-              : require("../../assets/default-avatar.jpg")
-          }
-        />
-      </TouchableOpacity>
-      <View style={ProfileStyle.m}>
-        <Text
-          style={[
-            ProfileStyle.name,
-            ProfileStyle.m,
-            { flexShrink: 1, flexWrap: "wrap", maxWidth: "70%" },
-          ]}
-        >
-          {profileData?.last_name + " " + profileData?.first_name}
-        </Text>
-        <Text style={[ProfileStyle.m, ProfileStyle.username]}>
-          {profileData?.username}
-        </Text>
-        {profileData?.bio ? (
-          <Text style={[ProfileStyle.bio, ProfileStyle.m]}>
-            {profileData?.bio}
-          </Text>
-        ) : (
-          <></>
-        )}
-
-        <TouchableOpacity
-          style={[ProfileStyle.followerAvatarContainer, ProfileStyle.m]}
-        >
-          {profileData.number_of_followers > 0 &&
-            minimalFollowers.map((follower, index) => {
-              if (index < 2) {
-                return (
-                  <Image
-                    key={index}
-                    style={[
-                      ProfileStyle.followerAvatar,
-                      index === 1 ? ProfileStyle.secondFollowerAvatar : {},
-                    ]}
-                    source={
-                      follower?.avatar
-                        ? { uri: follower.avatar }
-                        : require("../../assets/default-avatar.jpg")
-                    }
-                  />
-                );
-              }
-            })}
+        <TouchableOpacity onPress={profileData?.is_myself ? () => showUploadAlert("avatar") : null}>
+          <Image
+            style={ProfileStyle.avatar}
+            source={
+              profileData?.avatar
+                ? { uri: profileData.avatar }
+                : require("../../assets/default-avatar.jpg")
+            }
+          />
+        </TouchableOpacity>
+        <View style={ProfileStyle.m}>
           <Text
             style={[
-              ProfileStyle.followersText,
-              profileData.number_of_followers > 0
-                ? { marginLeft: 10 }
-                : null,
+              ProfileStyle.name,
+              ProfileStyle.m,
+              { flexShrink: 1, flexWrap: "wrap", maxWidth: "70%" },
             ]}
           >
-            {profileData.number_of_followers} người theo dõi
+            {profileData?.last_name + " " + profileData?.first_name}
           </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={[ProfileStyle.r, ProfileStyle.actions]}>
-        {profileData?.is_myself ? (
+          <Text style={[ProfileStyle.m, ProfileStyle.username]}>
+            {profileData?.username}
+          </Text>
+          {profileData?.bio ? (
+            <Text style={[ProfileStyle.bio, ProfileStyle.m]}>
+              {profileData?.bio}
+            </Text>
+          ) : (
+            <></>
+          )}
+
           <TouchableOpacity
-            style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-            onPress={handlePresentModalPress}
+            style={[ProfileStyle.followerAvatarContainer, ProfileStyle.m]}
           >
-            <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-              Chỉnh sửa thông tin cá nhân
+            {profileData.number_of_followers > 0 &&
+              minimalFollowers.map((follower, index) => {
+                if (index < 2) {
+                  return (
+                    <Image
+                      key={index}
+                      style={[
+                        ProfileStyle.followerAvatar,
+                        index === 1 ? ProfileStyle.secondFollowerAvatar : {},
+                      ]}
+                      source={
+                        follower?.avatar
+                          ? { uri: follower.avatar }
+                          : require("../../assets/default-avatar.jpg")
+                      }
+                    />
+                  );
+                }
+              })}
+            <Text
+              style={[
+                ProfileStyle.followersText,
+                profileData.number_of_followers > 0
+                  ? { marginLeft: 10 }
+                  : null,
+              ]}
+            >
+              {profileData.number_of_followers} người theo dõi
             </Text>
           </TouchableOpacity>
-        ) : (
-          <>
+        </View>
+        <View style={[ProfileStyle.r, ProfileStyle.actions]}>
+          {profileData?.is_myself ? (
             <TouchableOpacity
               style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-              onPress={() => handleFollow()}
+              onPress={handlePresentModalPress}
             >
               <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-                {profileData?.is_following ? "Bỏ theo dõi" : "Theo dõi"}
+                Chỉnh sửa thông tin cá nhân
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
-            >
-              <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
-                Nhắn tin
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View></>
-  }
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
+                onPress={() => handleFollow()}
+              >
+                <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
+                  {profileData?.is_following ? "Bỏ theo dõi" : "Theo dõi"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[ProfileStyle.button, { flex: 1, margin: 5 }]}
+              >
+                <Text style={[ProfileStyle.buttonText, ProfileStyle.p]}>
+                  Nhắn tin
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+        {profileData?.is_myself ? <TouchableOpacity 
+          style={[PostStyle.createPostButton, PostStyle.p, PostStyle.m_v]}
+          onPress={() => nav.navigate("createPost", {
+            onGoBack: (newPost) => {
+              setPost((prevPosts) => [newPost, ...prevPosts]);
+            }
+          })}
+        >
+          <Image
+            style={PostStyle.avatar}
+            source={{ uri: currentUser?.avatar }}
+          />
+          <View>
+            <Text style={PostStyle.name}>{currentUser?.last_name + " " + currentUser?.first_name}</Text>
+            <Text style={PostStyle.caption}>Có gì mới?</Text>
+          </View>
+        </TouchableOpacity> : null}
+      </>
+    )
+  };
   return (
     <SafeAreaView>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
@@ -336,6 +360,7 @@ useEffect(() => {
         refreshing={refreshing}
         onEndReached={fetchMore}
         onRefresh={handleRefresh}
+        onEndReachedThreshold={0.7}
       />
 
       {profileData.is_myself && (

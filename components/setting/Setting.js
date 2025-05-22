@@ -22,7 +22,6 @@ const Setting = () => {
                             <Icon size={32} source="account-plus" />
                             <Text style={SettingStyle.buttonText}>Tạo người dùng mới</Text>
                         </View>
-
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => nav.navigate("verifyUser")}
@@ -32,7 +31,6 @@ const Setting = () => {
                             <Icon size={32} source="account-arrow-up" />
                             <Text style={SettingStyle.buttonText}>Xác nhận người dùng</Text>
                         </View>
-
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => nav.navigate("invite")}
@@ -49,7 +47,7 @@ const Setting = () => {
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
                             <Icon size={32} source="chart-arc" />
-                            <Text style={SettingStyle.buttonText}>Thống kê</Text>
+                            <Text style={SettingStyle.buttonText}>Thống kê hệ thống</Text>
                         </View>
                     </TouchableOpacity>
                 </> : null

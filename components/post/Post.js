@@ -14,7 +14,7 @@ const Post = React.memo(({ postData, isDetail=false }) => {
     const nav = useNavigation();
     return (
         <TouchableOpacity 
-            style={PostStyle.p}
+            style={[PostStyle.p, PostStyle.container]}
             onPress={() => nav.navigate("postDetail",{ postData })}
         >
             <View style={PostStyle.header}>
@@ -24,21 +24,19 @@ const Post = React.memo(({ postData, isDetail=false }) => {
                 />
                 <View>
                     <Text style={PostStyle.name}>{postData?.author.last_name + " " + postData?.author.first_name}</Text>
-                    <Text style={PostStyle.date}>{`${dayjs(postData?.created_at).fromNow()} ${postData?.is_edited === true ? "(đã chỉnh sửa)" : ""}`}</Text>
+                    <Text style={PostStyle.date}>{`${dayjs(postData?.created_at).fromNow(true)} ${postData?.is_edited === true ? "(đã chỉnh sửa)" : ""}`}</Text>
                 </View>
+                {postData?.author.is_myself?<View style={PostStyle.stats}><Text>...</Text></View>:null}
             </View>
 
             <View>
                 <Text style={[PostStyle.content, PostStyle.m_v]} >{postData?.content}</Text>
-                <Image
-                    style={PostStyle.attachment}
-                    source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }}
-                />
+                
             </View>
             <View style={[PostStyle.r, PostStyle.stats]}>
-                <Text style={PostStyle.m_h}>{postData?.interaction_count} tương tác</Text>
-                <Text style={PostStyle.m_h}>{postData?.comment_count} bình luận</Text>
-                <Text style={PostStyle.m_h}>{postData?.share_count} chia sẻ</Text>
+                { postData?.interaction_count > 0 ? <Text style={PostStyle.m_h}>{postData?.interaction_count} tương tác</Text> : null}
+                { postData?.comment_count > 0 ? <Text style={PostStyle.m_h}>{postData?.comment_count} bình luận</Text> : null}
+                { postData?.share_count > 0 ? <Text style={PostStyle.m_h}>{postData?.share_count} chia sẻ</Text> : null}
             </View>
 
             <View style={[PostStyle.r, PostStyle.actions]}>
@@ -50,11 +48,6 @@ const Post = React.memo(({ postData, isDetail=false }) => {
                 <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
                     <IconButton icon="comment" size={20} />
                     <Text>Bình luận</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
-                    <IconButton icon="share" size={20} />
-                    <Text>Chia sẻ</Text>
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>

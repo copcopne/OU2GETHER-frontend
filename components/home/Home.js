@@ -1,18 +1,20 @@
-import { Text, View, ScrollView, TouchableOpacity, Image, FlatList } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, Image, FlatList, TouchableWithoutFeedback } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Post from "../post/Post";
 import HomeStyle from "../../styles/Home";
 import PostStyle from "../../styles/PostStyle";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
-import { SnackbarContext } from "../../configs/Contexts";
-import { ActivityIndicator } from "react-native-paper";
+import { SnackbarContext, UserContext } from "../../configs/Contexts";
+import { ActivityIndicator, Icon } from "react-native-paper";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import LoginStyle from "../../styles/LoginStyle";
 import { useNavigation } from "@react-navigation/native";
 
 const Home = () => {
+  const nav = useNavigation();
+  const currentUser = useContext(UserContext);
   const tabBarHeight = useBottomTabBarHeight();
   const { setSnackbar } = useContext(SnackbarContext);
   const [selectedTab, setSelectedTab] = React.useState("all");
@@ -22,8 +24,14 @@ const Home = () => {
   const [pageFollowing, setPageFollowing] = useState(1);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const listRef = useRef(null);
+
+  const scrollToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   const fetchPosts = async () => {
+    let res
     try {
       setLoading(true);
       let url = `${endpoints['posts']}`;
@@ -35,23 +43,17 @@ const Home = () => {
       } else if (page > 0)
         url = `${url}?page=${page}`;
       const token = await AsyncStorage.getItem('token');
-      const res = await authApis(token).get(url);
+      res = await authApis(token).get(url);
 
       if (selectedTab === "all") {
         if (page === 1) setPosts(res.data.results);
         else setPosts([...posts, ...res.data.results]);
-
-        if (res.data.next === null)
-          setPage(0)
       }
       else {
-        if (pageFollowing === 1) setFollowingPost[res.data.results];
+        if (pageFollowing === 1) setFollowingPost(res.data.results);
         else setFollowingPost([...followingPost, ...res.data.results]);
-
-        if (res.data.next === null)
-          setPageFollowing(0)
       }
-
+      
     } catch (error) {
       setSnackbar({
         visible: true,
@@ -64,10 +66,14 @@ const Home = () => {
       console.error(error.response.data);
     } finally {
       setLoading(false);
+      if (res.data.next === null)
+        setPage(0)
+      if (res.data.next === null)
+        setPageFollowing(0)
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     try {
       setRefreshing(true);
       if (selectedTab === "all") {
@@ -75,14 +81,14 @@ const Home = () => {
         if (page !== 1) {
           setPage(1);
         } else {
-          fetchPosts();
+          await fetchPosts();
         }
       } else {
         setFollowingPost([]);
         if (pageFollowing !== 1) {
           setPageFollowing(1);
         } else {
-          fetchPosts();
+          await fetchPosts();
         }
       }
     } catch (error) {
@@ -97,22 +103,11 @@ const Home = () => {
     }
   }
 
-  // useEffect(() => {
-  //   if (selectedTab === "all") {
-  //     setPage(1);
-  //     setPosts([]);
-  //   } else {
-  //     setPageFollowing(1);
-  //     setFollowingPost([]);
-  //   }
-  //   fetchPosts();
-  // }, [selectedTab]);
-
   useEffect(() => {
     if ((selectedTab === 'all' && page > 0) ||
       (selectedTab === 'following' && pageFollowing > 0))
       fetchPosts();
-  }, [page, pageFollowing]);
+  }, [page, pageFollowing, selectedTab]);
 
   const fetchMore = () => {
     if (!loading && !refreshing)
@@ -122,24 +117,41 @@ const Home = () => {
         setPageFollowing(pageFollowing + 1);
   }
   const renderHeader = () => {
-    return <>
-      <View style={HomeStyle.storyContainer}>
-        <Image
-          style={PostStyle.avatar}
-          source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }}
-        />
-        <View>
-          <Text style={PostStyle.username}>copcopne</Text>
-          <Text style={PostStyle.caption}>Có gì mới</Text>
-        </View>
-      </View></>;
-  }
+    return (
+      <>
+        <TouchableOpacity
+          style={[PostStyle.createPostButton, PostStyle.p]}
+          onPress={() => nav.navigate("createPost", {
+            onGoBack: (newPost) => {
+              setPosts((prevPosts) => [newPost, ...prevPosts]);
+            }
+          })}
+        >
+          <Image
+            style={PostStyle.avatar}
+            source={{ uri: currentUser?.avatar }}
+          />
+          <View>
+            <Text style={PostStyle.name}>{currentUser?.last_name + " " + currentUser?.first_name}</Text>
+            <Text style={PostStyle.caption}>Có gì mới?</Text>
+          </View>
+        </TouchableOpacity>
+      </>
+    );
+  };
 
   return (
     <SafeAreaView style={HomeStyle.container}>
-      <View style={HomeStyle.header}>
-        <Text style={HomeStyle.headerText}>OU2GETHER</Text>
-      </View>
+      <TouchableOpacity
+        onPress={() => {
+          scrollToTop();
+          handleRefresh();
+        }}>
+        <View style={HomeStyle.header}>
+          <Text style={HomeStyle.headerText}>OU2GETHER</Text>
+        </View>
+      </TouchableOpacity>
+
 
       <View style={HomeStyle.tabContainer}>
         <TouchableOpacity onPress={() => setSelectedTab("all")}>
@@ -165,8 +177,9 @@ const Home = () => {
       </View>
 
       <FlatList
-        style={{padding:0}}
+        style={{ padding: 0 }}
         ListFooterComponent={loading && <ActivityIndicator />}
+        ref={listRef}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={() =>
           <View style={{ flex: 1, padding: 32, alignItems: 'center' }}>
@@ -180,6 +193,7 @@ const Home = () => {
         refreshing={refreshing}
         onRefresh={handleRefresh}
         onEndReached={fetchMore}
+        onEndReachedThreshold={0.7}
       />
     </SafeAreaView>
   );

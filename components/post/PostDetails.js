@@ -1,4 +1,5 @@
-import { Image, KeyboardAvoidingView, Platform, SafeAreaView, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, IconButton, Text, TextInput } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import dayjs from "dayjs";
@@ -55,7 +56,6 @@ const PostDetail = ({ route }) => {
                 message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bình luận.`,
                 type: "error",
             });
-            // console.log(error.response);
         }
         finally {
             setLoading(false);
@@ -89,17 +89,13 @@ const PostDetail = ({ route }) => {
         }
     }
 
-    // useEffect(() => {
-    //     fetchComments();
-    // }, []);
-
     useEffect(() => {
         if (page > 0)
             fetchComments();
     }, [page]);
 
     const renderHeader = () => {
-        return <><View style={PostStyle.header}>
+        return <View style={PostStyle.p}><View style={PostStyle.header}>
             <TouchableOpacity onPress={() => {
                 if (isMySelf) {
                     nav.popToTop();
@@ -121,15 +117,12 @@ const PostDetail = ({ route }) => {
 
             <View>
                 <Text style={[PostStyle.content, PostStyle.m_v]} >{postData?.content}</Text>
-                <Image
-                    style={PostStyle.attachment}
-                    source={{ uri: "https://i.pinimg.com/736x/c2/33/46/c23346e32c1543eb57afb7af8b6e53fd.jpg" }}
-                />
+                
             </View>
             <View style={[PostStyle.r, PostStyle.stats]}>
-                <Text style={PostStyle.m_h}>{postData?.interaction_count} tương tác</Text>
-                <Text style={PostStyle.m_h}>{postData?.comment_count} bình luận</Text>
-                <Text style={PostStyle.m_h}>{postData?.share_count} chia sẻ</Text>
+                { postData?.interaction_count > 0 ? <Text style={PostStyle.m_h}>{postData?.interaction_count} tương tác</Text> : null}
+                { postData?.comment_count > 0 ? <Text style={PostStyle.m_h}>{postData?.comment_count} bình luận</Text> : null}
+                { postData?.share_count > 0 ? <Text style={PostStyle.m_h}>{postData?.share_count} chia sẻ</Text> : null}
             </View>
 
             <View style={[PostStyle.r, PostStyle.actions]}>
@@ -142,21 +135,16 @@ const PostDetail = ({ route }) => {
                     <IconButton icon="comment" size={20} />
                     <Text>Bình luận</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
-                    <IconButton icon="share" size={20} />
-                    <Text>Chia sẻ</Text>
-                </TouchableOpacity>
             </View>
-        </>
+        </View>
     }
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 180}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
-            <SafeAreaView style={[PostStyle.container, { position: "relative", flex: 1 }]}>
+            <View style={[PostStyle.container, { position: "relative", flex: 1 }]}>
                 <FlatList
                     style={{ padding: 0, flex: 1 }}
                     ListFooterComponent={loading && <ActivityIndicator />}
@@ -175,15 +163,14 @@ const PostDetail = ({ route }) => {
                     onRefresh={handleRefresh}
                 />
 
-                {/* <TextInput
+                <TextInput
           mode="outlined"
           placeholder="Viết bình luận..."
-          style={{ flex: 1, height: tabBarHeight }}
           value={newComment}
           onChangeText={setNewComment}
           right={<TextInput.Icon icon="send" />}
-        /> */}
-            </SafeAreaView>
+        />
+            </View>
         </KeyboardAvoidingView>
     )
 };

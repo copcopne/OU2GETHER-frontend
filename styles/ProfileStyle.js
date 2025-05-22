@@ -69,7 +69,7 @@ export default StyleSheet.create({
     },
     buttonText: {
         color: "#000",
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "600",
     },
     p: {

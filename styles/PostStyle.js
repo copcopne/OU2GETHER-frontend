@@ -3,12 +3,13 @@ import { RFValue } from "react-native-responsive-fontsize";
 
 export default StyleSheet.create({
     container: {
-        margin: 10
+        backgroundColor: "#fff",
+        marginVertical: 3,
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 5,
+        marginBottom: 10,
     },
     content: {
         fontSize: RFValue(13),
@@ -30,8 +31,8 @@ export default StyleSheet.create({
         color: "#666",
     },
     p: {
-        paddingVertical: 8,
-        paddingHorizontal: 5,
+        paddingTop: 12,
+        paddingHorizontal: 10,
     },
     attachment: {
         width: "100%",
@@ -54,11 +55,19 @@ export default StyleSheet.create({
         marginTop: 5,
     },
     actions: {
-        justifyContent: "space-evenly",
+        justifyContent: "space-around",
         marginTop: 5,
-        borderWidth: 1,
-        borderLeftWidth: 0,
-        borderRightWidth: 0,
-        borderColor: "#ddd",
+    },
+    createPostButton: {
+        paddingVertical: 10,
+        flexDirection: "row",
+        alignItems: "flex-start",
+        backgroundColor: "white",
+        width: "100%",
+    },
+    caption: {
+        marginTop: 5,
+        color: "#666",
+        fontSize: RFValue(12),
     },
 });
