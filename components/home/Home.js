@@ -1,5 +1,5 @@
-import { Text, View, ScrollView, TouchableOpacity, Image, FlatList, TouchableWithoutFeedback } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, View, TouchableOpacity, Image, FlatList, TouchableWithoutFeedback } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Post from "../post/Post";
 import HomeStyle from "../../styles/Home";
 import PostStyle from "../../styles/PostStyle";
@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
-import { ActivityIndicator, Icon } from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import LoginStyle from "../../styles/LoginStyle";
 import { useNavigation } from "@react-navigation/native";
