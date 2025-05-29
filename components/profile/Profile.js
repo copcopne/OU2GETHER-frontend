@@ -57,8 +57,9 @@ const Profile = ({ route }) => {
       const token = await AsyncStorage.getItem('token');
       res = await authApis(token).get(url);
 
+      const results = res.data.results;
       if (page === 1)
-        setPost(res.data.results);
+        setPost(results);
       else {
         const unique = results.filter(r => !post.some(p => p.id === r.id));
         setPost(prev => [...prev, ...unique]);
