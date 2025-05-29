@@ -45,13 +45,20 @@ const Home = () => {
       const token = await AsyncStorage.getItem('token');
       res = await authApis(token).get(url);
 
+      const results = res.data.results;
       if (selectedTab === "all") {
-        if (page === 1) setPosts(res.data.results);
-        else setPosts([...posts, ...res.data.results]);
+        if (page === 1) setPosts(results);
+        else {
+          const unique = results.filter(r => !posts.some(p => p.id === r.id));
+          setPosts(prev => [...prev, ...unique]);
+        }
       }
       else {
         if (pageFollowing === 1) setFollowingPost(res.data.results);
-        else setFollowingPost([...followingPost, ...res.data.results]);
+        else {
+          const unique = results.filter(r => !followingPost.some(p => p.id === r.id));
+          setFollowingPost(prev => [...prev, ...unique]);;
+        }
       }
 
     } catch (error) {
@@ -114,7 +121,7 @@ const Home = () => {
       );
     }
   };
-  
+
   const handleOnDeletePost = (postId) => {
     if (selectedTab === "all") {
       setPosts(prev => prev.filter(p => p.id != postId))
