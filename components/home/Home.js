@@ -53,7 +53,7 @@ const Home = () => {
         if (pageFollowing === 1) setFollowingPost(res.data.results);
         else setFollowingPost([...followingPost, ...res.data.results]);
       }
-      
+
     } catch (error) {
       setSnackbar({
         visible: true,
@@ -63,7 +63,7 @@ const Home = () => {
       if (selectedTab === "all") {
         setPage(1);
       } else setPageFollowing(1);
-      console.error(error.response.data);
+      console.error(error);
     } finally {
       setLoading(false);
       if (res.data.next === null)
@@ -97,9 +97,29 @@ const Home = () => {
         message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bài viết.`,
         type: "error",
       });
-      console.error(error.response.data);
+      console.error(error);
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  const handleOnUpdatePost = (updatedPost) => {
+    if (selectedTab === "all") {
+      setPosts(prev =>
+        prev.map(p => (p.id === updatedPost.id ? updatedPost : p))
+      );
+    } else {
+      setFollowingPost(prev =>
+        prev.map(p => (p.id === updatedPost.id ? updatedPost : p))
+      );
+    }
+  };
+  
+  const handleOnDeletePost = (postId) => {
+    if (selectedTab === "all") {
+      setPosts(prev => prev.filter(p => p.id != postId))
+    } else {
+      setFollowingPost(prev => prev.filter(p => p.id != postId))
     }
   }
 
@@ -140,8 +160,18 @@ const Home = () => {
     );
   };
 
+  const renderItem = ({ item }) => {
+    return (<TouchableOpacity
+      onPress={() =>
+        nav.navigate("postDetail",
+          { initialPostData: item, onUpdateSuccess: handleOnUpdatePost, onDeleteSuccess: handleOnDeletePost }
+        )}>
+      <Post initialPostData={item} onUpdateSuccess={handleOnUpdatePost} onDeleteSuccess={handleOnDeletePost} />
+    </TouchableOpacity>);
+  };
+
   return (
-    <View style={HomeStyle.container}>
+    <SafeAreaView style={HomeStyle.container}>
       <TouchableOpacity
         onPress={() => {
           scrollToTop();
@@ -187,15 +217,16 @@ const Home = () => {
           </View>
         }
         data={selectedTab === "all" ? posts : followingPost}
+        extraData={selectedTab === "all" ? posts : followingPost}
         keyExtractor={item => `${selectedTab}-${item.id}`}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 16 }}
-        renderItem={({ item }) => <Post postData={item} />}
+        renderItem={renderItem}
         refreshing={refreshing}
         onRefresh={handleRefresh}
         onEndReached={fetchMore}
         onEndReachedThreshold={0.7}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

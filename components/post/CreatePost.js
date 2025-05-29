@@ -1,42 +1,60 @@
-import { useContext, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useContext, useLayoutEffect, useState } from "react";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
-import { Image, View, Text, TextInput } from "react-native";
-import PostStyle from "../../styles/PostStyle";
-import { Button } from "react-native-paper";
+import { Image, View, Text, TextInput, TouchableOpacity, ScrollView, Keyboard } from "react-native";
+import { Chip } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { useNavigation } from "@react-navigation/native";
+import CreatePostStyle from "../../styles/CreatePostStyle";
 
 const CreatePost = ({ route }) => {
-    const { onGoBack } = route.params;
+    const { onGoBack } = route.params || {};
     const { setSnackbar } = useContext(SnackbarContext);
     const [content, setContent] = useState("");
     const currentUser = useContext(UserContext);
     const [loading, setLoading] = useState(false);
+    const [isCommentSelected, setIsCommentSelected] = useState(true);
     const nav = useNavigation();
+
+    useLayoutEffect(() => {
+        nav.setOptions({
+            headerRight: () => (
+                <TouchableOpacity onPress={upload}>
+                    <Text style={{ color: 'blue', fontWeight: "500" }}>ĐĂNG</Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [nav]);
+
     const validate = () => {
-        if (content === null)
+        if (content.trim().length === 0)
             return false;
         return true;
     }
     const upload = async () => {
-        if(!validate)
+        if (!validate()){
+            Keyboard.dismiss();
+            setSnackbar({
+                visible: true,
+                message: 'Vui lòng nhập nội dung',
+                type: "error",
+            });
             return;
+        }
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem("token");
             const response = await authApis(token).post(endpoints['posts'], {
-                content: content
+                content: content,
+                can_comment: isCommentSelected
             });
-            const createdPost = response.data;
             setSnackbar({
                 visible: true,
                 message: 'Đăng thành công!',
                 type: "success",
             });
             if (onGoBack) {
-                onGoBack(createdPost);
+                onGoBack(response.data);
             }
             nav.goBack();
         } catch (error) {
@@ -46,31 +64,38 @@ const CreatePost = ({ route }) => {
         }
     }
     return (
-        <SafeAreaView>
-            <View
-                style={[PostStyle.createPostButton, PostStyle.p]}
-            >
-                <Image
-                    style={PostStyle.avatar}
-                    source={{ uri: currentUser?.avatar }}
-                />
-                <View>
-                    <Text style={PostStyle.name}>{currentUser?.last_name + " " + currentUser?.first_name}</Text>
+        <View style={[CreatePostStyle.container]}>
+            <View style={CreatePostStyle.createPostCard}>
+                <Image style={CreatePostStyle.avatar} source={{ uri: currentUser?.avatar }} />
+                <View style={CreatePostStyle.inputSection}>
+                    <Text style={CreatePostStyle.name}>
+                        {currentUser?.last_name} {currentUser?.first_name}
+                    </Text>
                     <TextInput
+                        style={CreatePostStyle.input}
                         multiline
                         placeholder="Có gì mới?"
+                        placeholderTextColor="#999"
                         value={content}
                         onChangeText={setContent}
                     />
+                    
+                    <View style={CreatePostStyle.chipRow}>
+                        <Chip
+                            style={[
+                                CreatePostStyle.chip,
+                                isCommentSelected && CreatePostStyle.chipActive,
+                            ]}
+                            selected={isCommentSelected}
+                            onPress={() => setIsCommentSelected(!isCommentSelected)}
+                        >
+                            Đang {isCommentSelected ? "bật" : "tắt"} bình luận
+                        </Chip>
+                    </View>
                 </View>
             </View>
-            <Button
-                mode="contained-tonal"
-                onPress={upload}
-                loading={loading}
-                style={{ marginTop: 15, marginHorizontal: 5 }}
-            >Đăng</Button>
-        </SafeAreaView>
+        </View>
+
     )
 };
 export default CreatePost;

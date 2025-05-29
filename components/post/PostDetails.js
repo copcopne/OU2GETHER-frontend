@@ -1,36 +1,42 @@
-import { Image, KeyboardAvoidingView, Platform, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator, IconButton, Text, TextInput } from "react-native-paper";
+import { KeyboardAvoidingView, Platform, View, TextInput, Keyboard, RefreshControl, FlatList } from "react-native";
+import { ActivityIndicator, IconButton, Text } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
-import { useNavigation } from "@react-navigation/native";
-import { useContext, useEffect, useState } from "react";
-import { SnackbarContext, UserContext } from "../../configs/Contexts";
+import { useContext, useEffect, useRef, useState } from "react";
+import { SnackbarContext } from "../../configs/Contexts";
 import Comment from "./Comment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
-import { FlatList } from "react-native-gesture-handler";
 import LoginStyle from "../../styles/LoginStyle";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import Post from "./Post";
+import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
+
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
 const PostDetail = ({ route }) => {
+    const insets = useSafeAreaInsets();
+    const { initialPostData } = route.params || {}
+    const [postData, setPostData] = useState(initialPostData);
+    const { onUpdateSuccess } = route.params || {}
+    const { onDeleteSuccess } = route.params || {}
     const { setSnackbar } = useContext(SnackbarContext);
-    const tabBarHeight = useBottomTabBarHeight();
-    const nav = useNavigation();
-    const { postData } = route.params || {}
-    const currentUser = useContext(UserContext);
-    const authorId = postData?.author.id;
-    const isMySelf = currentUser?.id === authorId;
+    const { commenting } = route.params || {}
     const [comment, setComment] = useState([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [page, setPage] = useState(1);
+    const commentInputRef = useRef(null);
+    const nav = useNavigation();
 
+    if (commenting)
+        commentInputRef.current?.focus();
 
     const fetchComments = async () => {
         try {
@@ -43,10 +49,15 @@ const PostDetail = ({ route }) => {
             const token = await AsyncStorage.getItem("token");
             const res = await authApis(token).get(url);
 
+            const results = res.data.results;
             if (page === 1)
-                setComment(res.data.results);
-            else
-                setComment([...comment, ...res.data.results]);
+                setComment(results);
+            else {
+                const unique = results.filter(r =>
+                    !comment.some(c => c.id === r.id)
+                );
+                setComment(prev => [...prev, ...unique]);
+            }
 
             if (res.data.next === null)
                 setPage(0);
@@ -56,6 +67,7 @@ const PostDetail = ({ route }) => {
                 message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bình luận.`,
                 type: "error",
             });
+            console.error(error);
         }
         finally {
             setLoading(false);
@@ -66,14 +78,32 @@ const PostDetail = ({ route }) => {
             setPage(page + 1);
     }
 
-    const handleRefresh = () => {
+    const fetchPost = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const res = await authApis(token).get(endpoints['post'](postData.id));
+            setPostData(res.data);
+            if (onUpdateSuccess)
+                onUpdateSuccess(res.data);
+        } catch (error) {
+            setSnackbar({
+                visible: true,
+                message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bài viết.`,
+                type: "error",
+            });
+            console.error(error);
+        }
+    };
+
+    const handleRefresh = async () => {
         try {
             setRefreshing(true);
             setComment([]);
+            await fetchPost();
             if (page !== 1) {
                 setPage(1);
             } else {
-                fetchComments();
+                await fetchComments();
             }
         }
         catch (error) {
@@ -82,11 +112,58 @@ const PostDetail = ({ route }) => {
                 message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bình luận.`,
                 type: "error",
             });
-            console.log(error.response.data);
+            console.error(error);
         }
         finally {
             setRefreshing(false);
         }
+    }
+
+    const validateComment = () => {
+        if (newComment.trim().length === 0)
+            return false;
+        return true;
+    };
+
+    const handleComment = async () => {
+        if (!validateComment()) {
+            setSnackbar({
+                visible: true,
+                message: `Vui lòng nhập bình luận!`,
+                type: "error",
+            });
+            return;
+        }
+        try {
+            setUploading(true);
+            Keyboard.dismiss();
+            const token = await AsyncStorage.getItem("token");
+            const res = await authApis(token).post(endpoints['commentOnPost'](postData.id), {
+                content: newComment
+            });
+            setComment([res.data, ...comment]);
+            setNewComment("");
+        } catch (error) {
+            if (error.response.status === 403)
+                setSnackbar({
+                    visible: true,
+                    message: `Bài viết đã giới hạn quyền bình luận.`,
+                    type: "error",
+
+                });
+            else console.error(error);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteComment = (commentId) => {
+        setComment(prev => prev.filter(c => c.id != commentId))
+    }
+
+    const handleDeletePost = (postId) => {
+        nav.goBack();
+        return onDeleteSuccess(postId);
     }
 
     useEffect(() => {
@@ -95,83 +172,83 @@ const PostDetail = ({ route }) => {
     }, [page]);
 
     const renderHeader = () => {
-        return <View style={PostStyle.p}><View style={PostStyle.header}>
-            <TouchableOpacity onPress={() => {
-                if (isMySelf) {
-                    nav.popToTop();
-                    nav.navigate('profile');
-                } else {
-                    nav.navigate('profileStack', { userId: authorId });
-                }
-            }}>
-                <Image
-                    style={PostStyle.avatar}
-                    source={{ uri: postData?.author.avatar }}
-                />
-            </TouchableOpacity>
-            <View>
-                <Text style={PostStyle.name}>{postData?.author.last_name + " " + postData?.author.first_name}</Text>
-                <Text style={PostStyle.date}>{dayjs(postData?.created_at).fromNow(true)}</Text>
-            </View>
-        </View>
-
-            <View>
-                <Text style={[PostStyle.content, PostStyle.m_v]} >{postData?.content}</Text>
-                
-            </View>
-            <View style={[PostStyle.r, PostStyle.stats]}>
-                { postData?.interaction_count > 0 ? <Text style={PostStyle.m_h}>{postData?.interaction_count} tương tác</Text> : null}
-                { postData?.comment_count > 0 ? <Text style={PostStyle.m_h}>{postData?.comment_count} bình luận</Text> : null}
-                { postData?.share_count > 0 ? <Text style={PostStyle.m_h}>{postData?.share_count} chia sẻ</Text> : null}
-            </View>
-
-            <View style={[PostStyle.r, PostStyle.actions]}>
-                <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
-                    <IconButton icon="thumb-up" size={20} />
-                    <Text>Thích</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[PostStyle.r, PostStyle.button]}>
-                    <IconButton icon="comment" size={20} />
-                    <Text>Bình luận</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+        return <Post initialPostData={postData} commentInputRef={commentInputRef} onUpdateSuccess={onUpdateSuccess} onDeleteSuccess={handleDeletePost} />
     }
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+            style={{ flex: 1, backgroundColor: "white" }}
+            behavior="padding"
+            keyboardVerticalOffset={insets.bottom + 45}
         >
-            <View style={[PostStyle.container, { position: "relative", flex: 1 }]}>
-                <FlatList
-                    style={{ padding: 0, flex: 1 }}
-                    ListFooterComponent={loading && <ActivityIndicator />}
-                    data={comment}
-                    ListHeaderComponent={renderHeader}
-                    ListEmptyComponent={() =>
-                        <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
-                            <Text style={LoginStyle.subTitle}>Không có bình luận nào</Text>
-                        </View>
-                    }
-                    keyExtractor={item => `${item.id}`}
-                    contentContainerStyle={{ paddingBottom: tabBarHeight + 32 }}
-                    renderItem={({ item }) => <Comment commentData={item} />}
-                    refreshing={refreshing}
-                    onEndReached={fetchMore}
-                    onRefresh={handleRefresh}
-                />
-
-                <TextInput
-          mode="outlined"
-          placeholder="Viết bình luận..."
-          value={newComment}
-          onChangeText={setNewComment}
-          right={<TextInput.Icon icon="send" />}
-        />
+            <KeyboardAwareFlatList
+                enableOnAndroid
+                extraScrollHeight={120}
+                keyboardOpeningTime={0}
+                style={PostStyle.container}
+                data={comment}
+                ListHeaderComponent={renderHeader()}
+                ListFooterComponent={loading ? <ActivityIndicator /> : null}
+                ListEmptyComponent={
+                    <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
+                        <Text style={LoginStyle.subTitle}>Không có bình luận nào</Text>
+                    </View>
+                }
+                keyExtractor={item => `${item.id}`}
+                renderItem={({ item }) => (
+                    <Comment
+                        initialCommentData={item}
+                        commentInputRef={commentInputRef}
+                        onDeleteSuccess={handleDeleteComment}
+                        postAuthor={postData.author}
+                    />
+                )}
+                contentContainerStyle={{ paddingBottom: 32, flexGrow: 1 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
+                onEndReached={!refreshing ? fetchMore : null}
+                onEndReachedThreshold={0.7}
+                keyboardShouldPersistTaps="handled"
+            />
+            
+            <View
+                style={{
+                    marginHorizontal: 20,
+                    marginBottom: 20,
+                    backgroundColor: "#EFEFEF",
+                    borderRadius: 18,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingLeft: 10,
+                }}
+            >
+                {postData.can_comment ? (
+                    <View style={{flexDirection:"row"}}>
+                        <TextInput
+                            ref={commentInputRef}
+                            style={[{ flex: 1, marginRight: 5}, PostStyle.content]}
+                            multiline
+                            placeholder="Viết bình luận..."
+                            placeholderTextColor="#aaa"
+                            value={newComment}
+                            onChangeText={setNewComment}
+                        />
+                        {!uploading ? (
+                            <IconButton icon="send" onPress={handleComment} style={{ padding: 0 }} />
+                        ) : (
+                            <ActivityIndicator color="black" style={{ marginRight: 10 }} />
+                        )}
+                    </View>
+                ) : (
+                    <Text style={{ padding: 10, fontSize: 16 }}>
+                        Bài viết đã giới hạn quyền bình luận
+                    </Text>
+                )}
             </View>
         </KeyboardAvoidingView>
-    )
+    );
 };
 export default PostDetail;

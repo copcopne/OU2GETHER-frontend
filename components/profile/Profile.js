@@ -1,8 +1,8 @@
-import { Alert, FlatList, Image, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, Platform, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import ProfileStyle from "../../styles/ProfileStyle";
 import Post from "../post/Post";
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   DispatchContext,
   SnackbarContext,
@@ -18,16 +18,13 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import PostStyle from "../../styles/PostStyle";
 import { useNavigation } from "@react-navigation/native";
 
-const Profile = React.memo(({ route }) => {
+const Profile = ({ route }) => {
   const nav = useNavigation();
   const tabBarHeight = useBottomTabBarHeight();
   const { setSnackbar } = useContext(SnackbarContext);
   const bottomSheetModalRef = useRef(null);
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
-  }, []);
-  const handleSheetChanges = useCallback((index) => {
-    console.log("handleSheetChanges", index);
   }, []);
   const currentUser = useContext(UserContext);
   const [profileData, setProfileData] = useState({});
@@ -38,7 +35,7 @@ const Profile = React.memo(({ route }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [firstLoadDone,  setFirstLoadDone] = useState(false);
+  const [firstLoadDone, setFirstLoadDone] = useState(false);
   const showUploadAlert = (type) => {
     Alert.alert(type === "avatar" ? "Ảnh đại diện" : "Ảnh bìa", "Bạn muốn làm gì", [
       { text: "Thay đổi", onPress: () => handleMediaUpload(type) },
@@ -47,7 +44,7 @@ const Profile = React.memo(({ route }) => {
   };
 
   const fetchPosts = async () => {
-    let res
+    let res;
     try {
       setLoading(true);
       let url = `${endpoints['posts']}`;
@@ -104,7 +101,7 @@ const Profile = React.memo(({ route }) => {
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     if (page > 0)
@@ -132,7 +129,7 @@ const Profile = React.memo(({ route }) => {
       setRefreshing(false);
     }
   }
-  
+
   const fetchMore = () => {
     if (!loading && !refreshing && page > 0 && post.length > 0)
       setPage(page + 1);
@@ -325,7 +322,9 @@ const Profile = React.memo(({ route }) => {
             )}
           </View>
         </> :
-          <Text style={[ProfileStyle.name, ProfileStyle.m]}>Đang tải thông tin cá nhân</Text>}
+          <Text style={[ProfileStyle.name, ProfileStyle.m]}>Đang tải thông tin cá nhân</Text>
+        }
+
         {profileData?.is_myself ? <TouchableOpacity
           style={[PostStyle.createPostButton, PostStyle.p, PostStyle.m_v]}
           onPress={() => nav.navigate("createPost", {
@@ -346,21 +345,42 @@ const Profile = React.memo(({ route }) => {
       </>
     )
   };
+
+  const handleOnUpdatePost = (updatedPost) => {
+    setPost(prev =>
+      prev.map(p => (p.id === updatedPost.id ? updatedPost : p))
+    );
+  };
+
+  const handleOnDeletePost = (postId) => {
+    setPost(prev => prev.filter(p => p.id != postId))
+  };
+
+  const renderItem = ({ item }) => {
+    return (<TouchableOpacity
+      onPress={() =>
+        nav.navigate("postDetail",
+          { initialPostData: item, onUpdateSuccess: handleOnUpdatePost, onDeleteSuccess: handleOnDeletePost }
+        )}>
+      <Post initialPostData={item} onUpdateSuccess={handleOnUpdatePost} onDeleteSuccess={handleOnDeletePost} />
+    </TouchableOpacity>);
+  };
   return (
     <>
       <FlatList
         style={{ padding: 0 }}
         ListFooterComponent={loading && <ActivityIndicator />}
         data={post}
+        extraData={post}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={() =>
-          <View style={{ flex: 1, alignItems: 'center', paddingTop: 32 }}>
+          <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
             <Text style={LoginStyle.subTitle}>Không có bài viết</Text>
           </View>
         }
         keyExtractor={item => `${item.id}`}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 16 }}
-        renderItem={({ item }) => <Post postData={item} />}
+        renderItem={renderItem}
         refreshing={refreshing}
         onEndReached={fetchMore}
         onRefresh={handleRefresh}
@@ -370,8 +390,7 @@ const Profile = React.memo(({ route }) => {
       {profileData.is_myself && (
         <BottomSheetModal
           ref={bottomSheetModalRef}
-          snapPoints={["80%"]}
-          onChange={handleSheetChanges}
+          snapPoints={["95%"]}
         >
           <BottomSheetView style={{ flex: 1 }}>
             <EditProfile
@@ -383,6 +402,6 @@ const Profile = React.memo(({ route }) => {
       )}
     </>
   );
-});
+};
 
 export default Profile;

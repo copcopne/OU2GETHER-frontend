@@ -1,9 +1,8 @@
 import { Keyboard } from "react-native";
 import { useState, useRef } from "react";
 import { Text, View, TouchableOpacity, ScrollView, Image, Platform, Alert, KeyboardAvoidingView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from 'expo-image-picker';
-import {TextInput, Button, PaperProvider } from "react-native-paper";
+import {TextInput, Button } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import Apis, { endpoints } from "../../configs/Apis";
 import RegisterStyle from "../../styles/RegisterStyle";
@@ -196,11 +195,10 @@ const Register = () => {
   };
 
   return (
-    <SafeAreaView style={RegisterStyle.container}>
+    <View style={RegisterStyle.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       ><ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 16 }}
         keyboardShouldPersistTaps="handled"
@@ -305,7 +303,7 @@ const Register = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 

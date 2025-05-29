@@ -104,7 +104,7 @@ const EditProfile = ({ profileData, modalRef }) => {
 
     return (
         <>
-            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative', paddingVertical: 8 }}>
                 <View style={{ position: 'absolute', right: 16 }}>
                     <Button onPress={() => save()}>Xong</Button>
                 </View>

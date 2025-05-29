@@ -1,6 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import { Text, View, TouchableOpacity, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, TouchableOpacity, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { Button, Dialog, Portal, TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -61,6 +60,7 @@ const Login = () => {
       showDialog();
     } else {
       try {
+        Keyboard.dismiss();
         setLoading(true);
 
         const payload = qs.stringify({
@@ -71,6 +71,7 @@ const Login = () => {
         });
         let res = await Apis.post(endpoints['login'], payload);
         await AsyncStorage.setItem('token', res.data.access_token);
+        await AsyncStorage.setItem('refresh', res.data.refresh_token);
 
         let u = await authApis(res.data.access_token).get(endpoints['currentUser']);
         let userdata = u.data;
@@ -166,7 +167,6 @@ const Login = () => {
                   inputRefs.current[nextField]?.focus();
                 } else {
                   login();
-                  Keyboard.dismiss();
                 }
               }}
             />

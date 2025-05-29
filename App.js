@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import UserReducer from './reducers/UserReducer';
 import Home from './components/home/Home';
 import Post from './components/post/Post';
@@ -16,13 +16,16 @@ import CreateUser from './components/setting/CreateUser';
 import CreatePost from './components/post/CreatePost';
 import Anonymous from './components/profile/Anonymous';
 import PostDetail from './components/post/PostDetails';
-import { Icon, PaperProvider } from 'react-native-paper';
+import { ActivityIndicator, Icon, PaperProvider } from 'react-native-paper';
 import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contexts';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Apis, { authApis, endpoints } from './configs/Apis';
+import { View } from 'react-native';
 
 
 const Stack = createNativeStackNavigator();
@@ -94,7 +97,7 @@ const ProfileStack = () => {
         options={{
           title: "Chi tiết bài viết",
           headerShown: true,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         }} />
     </Stack.Navigator>
   );
@@ -164,7 +167,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen name="home" component={HomeStack} options={{ title: "Trang chủ", tabBarIcon: () => <Icon size={30} source="home" /> }} />
       {/* <Tab.Screen name="search" options={{ title: "Tìm kiếm", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
-      {/* <Tab.Screen name="createPost" options={{ title: "Tạo bài viết mới", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
+      {/* <Tab.Screen name="createPost" component={CreatePost} options={{ title: "Tạo bài viết mới", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
       {/* <Tab.Screen name="chat" component={Profile} options={{ title: "Tin nhắn", tabBarIcon: () => <Icon size={30} source="account" /> }} /> */}
       <Tab.Screen name="profile" component={ProfileStack} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
       <Tab.Screen name="setting" component={SettingStack} options={{ title: "Cài đặt", tabBarIcon: () => <Icon size={30} source="cog" /> }} />
@@ -174,9 +177,58 @@ const MainNavigator = () => {
 
 const App = () => {
   const [user, dispatch] = useReducer(UserReducer, null);
+  const [isChecking, setIsChecking] = useState(false);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const refresh = await AsyncStorage.getItem("refresh");
+      let res;
+      if (!token || !refresh) return;
+      try {
+        setIsChecking(true);
+        res = await authApis(token).get(endpoints['currentUser']);
+        dispatch({
+          'type': 'login',
+          'payload': res.data
+        })
+      } catch (error) {
+        if (error.response?.status === 401) {
+          try {
+            res = await Apis.post(endpoints['login'], {
+              grant_type: "refresh_token",
+              refresh_token: refresh,
+              client_id: 'FFtLr1EegBDRWsI7unpeQtEbIuMPgrfWM69ED7Qe'
+            })
+            await AsyncStorage.setItem('token', res.data.access_token);
+            await AsyncStorage.setItem('refresh', res.data.refresh_token);
+
+            res = await authApis(token).get(endpoints['currentUser']);
+            dispatch({
+              'type': 'login',
+              'payload': res.data
+            })
+          } catch (e) {
+            await AsyncStorage.multiRemove(["token", "refresh"]);
+          };
+        }
+      } finally {
+        setIsChecking(false);
+      };
+    };
+    checkLogin();
+  }, []);
+
+  if (isChecking) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="black" />
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaProvider>
       <UserContext.Provider value={user}>
         <DispatchContext.Provider value={dispatch}>
           <PaperProvider>
@@ -192,7 +244,7 @@ const App = () => {
           </PaperProvider>
         </DispatchContext.Provider>
       </UserContext.Provider>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 export default App;

@@ -10,9 +10,13 @@ export default StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 10,
+        justifyContent: "space-between",
+    },
+    more: {
+        marginRight: 0,
     },
     content: {
-        fontSize: RFValue(13),
+        fontSize: RFValue(16),
     },
     avatar: {
         width: 40,
@@ -23,11 +27,15 @@ export default StyleSheet.create({
         marginRight: 10,
     },
     name: {
-        fontSize: RFValue(12),
+        fontSize: RFValue(14),
         fontWeight: "bold",
     },
     date: {
-        fontSize: RFValue(10),
+        fontSize: 13,
+        color: "#666",
+    },
+    commentDate: {
+        fontSize: 16,
         color: "#666",
     },
     p: {
@@ -51,7 +59,7 @@ export default StyleSheet.create({
         marginVertical: 3,
     },
     stats: {
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
         marginTop: 5,
     },
     actions: {
@@ -68,6 +76,27 @@ export default StyleSheet.create({
     caption: {
         marginTop: 5,
         color: "#666",
-        fontSize: RFValue(12),
+        fontSize: RFValue(16),
+    },
+    actionsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingVertical: 6,
+        borderTopWidth: 0.5,
+        borderColor: '#ccc',
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    reactionBox: {
+        flexDirection: 'row',
+        backgroundColor: '#eeeeee',
+        padding: 8,
+        borderRadius: 30,
+    },
+    reactionIcon: {
+        borderRadius: 20,
+        marginHorizontal: 8,
     },
 });

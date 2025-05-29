@@ -25,13 +25,12 @@ export const endpoints = {
     // Posts
     posts: '/posts/',
 
-    getPost: (post_id) => `/posts/${post_id}/`,
-    deletePost: (post_id) => `/posts/${post_id}/delete-post/`,
+    post: (post_id) => `/posts/${post_id}/`,
     updatePost: (post_id) => `/posts/${post_id}/update-post/`,
     updatePostMediaUpload: (post_id) => `/posts/${post_id}/update-post/upload-media/`,
     updatePostDeleteMedia: (post_id, media_id) => `/posts/${post_id}/update-post/media/${media_id}/`,
 
-    comment: (post_id) => `/posts/${post_id}/comment/`,
+    commentOnPost: (post_id) => `/posts/${post_id}/comment/`,
     getComments: (post_id) => `/posts/${post_id}/comments/`,
 
     vote: (post_id) => `/posts/${post_id}/vote/`,
@@ -42,11 +41,11 @@ export const endpoints = {
     share: (post_id) => `/posts/${post_id}/share/`,
 
     // Comments
-    deleteComment: (comment_id) => `/comment/${comment_id}/delete-comment/`,
-    interactComment: (comment_id, reaction) => `/comment/${comment_id}/interact/${reaction}/`,
-    CommentInteractions: (comment_id) => `/comment/${comment_id}/interactions/`,
-    replyComment: (comment_id) => `/comment/${comment_id}/reply/`,
-    updateComment: (comment_id)=> `/comment/${comment_id}/update-comment/`,
+    comment: (comment_id) => `/comments/${comment_id}/`,
+    interactComment: (comment_id, reaction) => `/comments/${comment_id}/interact/${reaction}/`,
+    CommentInteractions: (comment_id) => `/comments/${comment_id}/interactions/`,
+    replyComment: (comment_id) => `/comments/${comment_id}/reply/`,
+    updateComment: (comment_id)=> `/comments/${comment_id}/update-comment/`,
 
 
 

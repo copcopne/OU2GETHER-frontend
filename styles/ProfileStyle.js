@@ -1,5 +1,8 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
+
+const screenWidth = Dimensions.get('window').width;
+const coverHeight = (screenWidth * 9) / 16;
 
 export default StyleSheet.create({
     container: {
@@ -7,7 +10,7 @@ export default StyleSheet.create({
     },
     cover: {
         width: "100%",
-        height: 150,
+        height: coverHeight,
     },
     avatar: {
         width: 80,
@@ -27,14 +30,14 @@ export default StyleSheet.create({
         maxWidth: "70%"
     },
     bio: {
-        fontSize: RFValue(13),
+        fontSize: RFValue(14),
     },
     m: {
         marginHorizontal: 5,
         marginTop: 5,
     },
     username: {
-        fontSize: RFValue(12),
+        fontSize: RFValue(14),
         color: "#666",
     },
     followerAvatarContainer: {
@@ -55,7 +58,7 @@ export default StyleSheet.create({
     },
 
     followersText: {
-        fontSize: RFValue(12),
+        fontSize: RFValue(14),
         color: "#666",
     },
     r: {
