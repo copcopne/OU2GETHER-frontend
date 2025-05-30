@@ -5,7 +5,11 @@ const HomeStyle = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 16,
+    flexDirection:"row",
+    justifyContent: "space-between",
+    alignItems:"center",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderColor: "#eee",
     backgroundColor: "#fff"

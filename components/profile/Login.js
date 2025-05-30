@@ -7,6 +7,7 @@ import Apis, { authApis, endpoints } from "../../configs/Apis";
 import qs from "qs"
 import { useNavigation } from "@react-navigation/native";
 import { DispatchContext } from "../../configs/Contexts";
+import Constants from 'expo-constants';
 
 const Login = () => {
   const info = [{
@@ -67,7 +68,7 @@ const Login = () => {
           grant_type: 'password',
           username: user.username,
           password: user.password,
-          client_id: 'FFtLr1EegBDRWsI7unpeQtEbIuMPgrfWM69ED7Qe',
+          client_id: Constants.expoConfig.extra.client_id
         });
         let res = await Apis.post(endpoints['login'], payload);
         await AsyncStorage.setItem('token', res.data.access_token);

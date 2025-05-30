@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
-import { ActivityIndicator } from "react-native-paper";
+import { ActivityIndicator, IconButton } from "react-native-paper";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import LoginStyle from "../../styles/LoginStyle";
 import { useNavigation } from "@react-navigation/native";
@@ -179,15 +179,33 @@ const Home = () => {
 
   return (
     <SafeAreaView style={HomeStyle.container}>
-      <TouchableOpacity
-        onPress={() => {
-          scrollToTop();
-          handleRefresh();
-        }}>
-        <View style={HomeStyle.header}>
+
+      <View style={HomeStyle.header}>
+        <TouchableOpacity
+          onPress={() => {
+            scrollToTop();
+            handleRefresh();
+          }}>
           <Text style={HomeStyle.headerText}>OU2GETHER</Text>
+        </TouchableOpacity>
+        <View
+          style={{
+            padding: 5,
+            borderRadius: 999,
+            backgroundColor: 'rgba(0,0,0,0.05)',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <IconButton
+            size={20}
+            icon="message-text-outline"
+            iconColor="black"
+            onPress={() => nav.navigate("allChats")}
+            style={{ margin: 0 }}
+          />
         </View>
-      </TouchableOpacity>
+      </View>
 
 
       <View style={HomeStyle.tabContainer}>

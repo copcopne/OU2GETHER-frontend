@@ -31,7 +31,8 @@ import UnlockAccount from './components/setting/UnlockAccount';
 import CreatePostModal from './components/post/CreatePostModal';
 import Empty from './components/empty';
 import Search from './components/profile/Search';
-
+import AllChats from './components/Chat/AllChats';
+import Constants from 'expo-constants';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -70,6 +71,14 @@ const HomeStack = () => {
         component={Profile}
         options={{
           title: "Trang cá nhân",
+          headerShown: true,
+          headerBackTitleVisible: false
+        }} />
+        <Stack.Screen
+        name="allChats"
+        component={AllChats}
+        options={{
+          title: "Đoạn chat",
           headerShown: true,
           headerBackTitleVisible: false
         }} />
@@ -238,7 +247,7 @@ const App = () => {
             res = await Apis.post(endpoints['login'], {
               grant_type: "refresh_token",
               refresh_token: refresh,
-              client_id: 'FFtLr1EegBDRWsI7unpeQtEbIuMPgrfWM69ED7Qe'
+              client_id: Constants.expoConfig.extra.client_id
             })
             await AsyncStorage.setItem('token', res.data.access_token);
             await AsyncStorage.setItem('refresh', res.data.refresh_token);
