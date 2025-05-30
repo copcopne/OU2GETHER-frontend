@@ -1,56 +1,60 @@
 import { Keyboard } from "react-native";
-import { useState, useRef } from "react";
-import { Text, View, TouchableOpacity, ScrollView, Image, Platform, Alert, KeyboardAvoidingView } from "react-native";
-import * as ImagePicker from 'expo-image-picker';
-import {TextInput, Button } from "react-native-paper";
+import { useState, useRef, useLayoutEffect } from "react";
+import { View, ScrollView, Alert, Button } from "react-native";
+import { ActivityIndicator, TextInput, Menu, IconButton, Text } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
-import Apis, { endpoints } from "../../configs/Apis";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 import RegisterStyle from "../../styles/RegisterStyle";
 import { useNavigation } from "@react-navigation/native";
+import { Asset } from 'expo-asset';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CreateUser = () => {
-    const [newUser, setNewUser] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
+    const [newUser, setNewUser] = useState({ role: 1 });
     const [loading, setLoading] = useState(false);
 
     const info = [
-        { label: "Mã số sinh viên", field: "member_id", secureTextEntry: false },
-        { label: "Tên", field: "first_name", secureTextEntry: false },
-        { label: "Họ và tên lót", field: "last_name", secureTextEntry: false },
-        { label: "Email", field: "email", secureTextEntry: false },
-        { label: "Tên người dùng", field: "username", secureTextEntry: false },
-        { label: "Mật khẩu", field: "password", secureTextEntry: true },
-        { label: "Nhập lại mật khẩu", field: "confirm", secureTextEntry: true },
+        { label: "Email", field: "email", },
+        { label: "Họ và tên lót", field: "last_name" },
+        { label: "Tên", field: "first_name" },
+        { label: "Mã hệ thống", field: "member_id" },
+        { label: "Tên người dùng", field: "username" },
     ];
+    const [menuVisible, setMenuVisible] = useState(false);
+
+    const roles = [
+        { label: "Quản trị viên", field: 0 },
+        { label: "Giảng viên", field: 1 },
+        { label: "Cựu Sinh Viên", field: 2 }
+    ];
+
     const inputRefs = useRef({});
     const isLast = (index) => index === info.length - 1;
 
     const nav = useNavigation();
-
-    const onImagePress = (field) => {
-        if (newUser[field]) {
-            Alert.alert(
-                field === 'avatar' ? 'Ảnh đại diện' : 'Ảnh bìa',
-                'Bạn muốn làm gì?',
-                [
-                    { text: 'Thay ảnh', onPress: () => handlePickImage(field) },
-                    { text: 'Xoá ảnh', onPress: () => setNewUser({ ...newUser, [field]: null }) },
-                    { text: 'Huỷ', style: 'cancel' }
-                ]
-            );
-        } else {
-            handlePickImage(field);
-        }
-    };
+    useLayoutEffect(() => {
+        nav.setOptions({
+            headerRight: () => (
+                <Button
+                    onPress={register}
+                    disabled={loading}
+                    color="black"
+                    title="Lưu"
+                />
+            ),
+        });
+    }, [nav]);
 
     const setState = (value, field) =>
         setNewUser({ ...newUser, [field]: value });
 
     const validate = () => {
+        if (!newUser.role) {
+            Alert.alert("Thông báo", "Vui lòng chọn vai trò trong hệ thống!");
+            return false;
+        }
         for (let i of info) {
             const value = newUser[i.field] || "";
-
             if (value === "") {
                 Alert.alert(
                     "Thông báo",
@@ -65,18 +69,6 @@ const CreateUser = () => {
                 return false;
             }
             if (i.field === "member_id") {
-                if (!/^\d+$/.test(value)) {
-                    Alert.alert("Thông báo", "Mã số sinh viên phải là số!", [
-                        {
-                            text: "OK",
-                            onPress: () =>
-                                setTimeout(() => {
-                                    inputRefs.current["member_id"]?.focus();
-                                }, 100),
-                        },
-                    ]);
-                    return false;
-                }
                 if (value.length > 12) {
                     Alert.alert("Thông báo", "Mã số sinh viên tối đa 12 ký tự!", [
                         {
@@ -91,16 +83,6 @@ const CreateUser = () => {
                 }
             }
         }
-
-        if (!newUser.avatar) {
-            Alert.alert("Thông báo", `Vui lòng nhập chọn ảnh đại diện!`);
-            return false;
-        }
-
-        if (newUser.password !== newUser.confirm) {
-            Alert.alert("Thông báo", "Mật khẩu không khớp!");
-            return false;
-        }
         return true;
     };
 
@@ -110,27 +92,29 @@ const CreateUser = () => {
             setLoading(true);
             let form = new FormData();
             for (let key in newUser) {
-                if (key !== "confirm") {
-                    if (key === "avatar") {
-                        form.append(key, {
-                            uri: newUser.avatar.uri,
-                            name: newUser.avatar.fileName,
-                            type: `${newUser.avatar.type}/${newUser.avatar.fileName.split(".").pop()}`,
-                        });
-                    } else {
-                        form.append(key, newUser[key]);
-                    }
-                }
+                form.append(key, newUser[key]);
             }
-            let res = await Apis.post(endpoints['register'], form, {
+
+            const imageAsset = Asset.fromModule(require('../../assets/default-avatar.jpg'));
+            await imageAsset.downloadAsync();
+            const extension = imageAsset.name.split(".").pop();
+            const mime = `image/${extension}`;
+            form.append("avatar", {
+                uri: imageAsset.localUri || imageAsset.uri,
+                name: imageAsset.name,
+                type: mime
+            });
+            const token = await AsyncStorage.getItem("token");
+
+            await authApis(token).post(endpoints['register'], form, {
                 headers: {
                     "accept": 'application/json',
                     "content-Type": "multipart/form-data"
                 }
             });
 
-            Alert.alert("Đăng ký thành công!", "Vui lòng chờ admin xác nhận tài khoản của bạn.");
-            nav.goBack();
+            Alert.alert("Thông báo", "Tạo tài khoản thành công!");
+            setNewUser({});
         } catch (error) {
             let message = "";
 
@@ -172,124 +156,72 @@ const CreateUser = () => {
         }
     };
 
-    const handlePickImage = async (field) => {
-        try {
-            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (permissionResult.status !== 'granted') {
-                alert('Quyền truy cập ảnh bị từ chối');
-                return;
-            }
-
-            const result = await ImagePicker.launchImageLibraryAsync({
-                allowsEditing: true,
-                aspect: field === 'cover' ? [16, 9] : [1, 1],
-                quality: 1,
-            });
-
-            if (!result.canceled) {
-                setState(result.assets[0], field);
-            }
-        } catch (error) {
-            console.error('Error picking image:', error);
-        }
-    };
+    if (loading)
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "transparent" }}>
+                <ActivityIndicator size="large" color="black" />
+            </View>
+        );
 
     return (
-        <View style={[RegisterStyle.container, {width: "100%"} ]}>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-            ><ScrollView
-                contentContainerStyle={{ flexGrow: 1, padding: 16 }}
-                keyboardShouldPersistTaps="handled"
-            >
-                    <View style={RegisterStyle.avatarContainer}>
-                        <TouchableOpacity onPress={() => onImagePress('avatar')}>
-                            {newUser.avatar ? (
-                                <Image
-                                    source={{ uri: newUser.avatar.uri }}
-                                    style={RegisterStyle.avatar}
-                                />
-                            ) : (
-                                <View style={[RegisterStyle.avatar, RegisterStyle.avatarPlaceholder]}>
-                                    <Text style={RegisterStyle.avatarText}>Chọn hình đại diện</Text>
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={LoginStyle.p}>
-
-
-                        {info.map((i, idx) => {
-                            const isPasswordField = i.field === "password";
-                            const isConfirmField = i.field === "confirm";
-                            const isSecure = i.secureTextEntry
-                                ? isPasswordField
-                                    ? !showPassword
-                                    : !showConfirm
-                                : false;
-
-                            return (
+        <View style={RegisterStyle.container}>
+            <ScrollView style={{ width: "100%" }}>
+                <View style={[LoginStyle.p]}>
+                    <View style={{ marginBottom: 10 }}>
+                        <Menu
+                            visible={menuVisible}
+                            onDismiss={() => setMenuVisible(false)}
+                            anchor={
                                 <TextInput
-                                    key={i.field}
-                                    ref={(el) => (inputRefs.current[i.field] = el)}
                                     mode="outlined"
-                                    autoCapitalize={(isPasswordField || isConfirmField) ? "none" : "sentences"}
-                                    value={newUser[i.field] || ""}
-                                    onChangeText={(t) => setState(t, i.field)}
+                                    value={roles.find(r => r.field === newUser.role)?.label || ""}
                                     style={LoginStyle.input}
-                                    label={i.label}
-                                    secureTextEntry={i.secureTextEntry ? isSecure : false}
-                                    right={
-                                        i.secureTextEntry ? (
-                                            <TextInput.Icon
-                                                icon={
-                                                    (isPasswordField && showPassword) ||
-                                                        (isConfirmField && showConfirm)
-                                                        ? "eye-off"
-                                                        : "eye"
-                                                }
-                                                onPress={() => {
-                                                    if (isPasswordField) setShowPassword(!showPassword);
-                                                    if (isConfirmField) setShowConfirm(!showConfirm);
-                                                }}
-                                            />
-                                        ) : null
-                                    }
-                                    returnKeyType={isLast(idx) ? "done" : "next"}
-                                    onSubmitEditing={() => {
-                                        if (!isLast(idx)) {
-                                            const nextField = info[idx + 1].field;
-                                            inputRefs.current[nextField]?.focus();
-                                        } else {
-                                            register();
-                                            Keyboard.dismiss();
-                                        }
-                                    }}
+                                    editable={false}
+                                    label="Vai trò"
+                                    right={<TextInput.Icon icon="menu-down" onPress={() => setMenuVisible(true)} />}
                                 />
-                            );
-                        })}
-
-                        <Button
-                            mode="contained"
-                            onPress={register}
-                            disabled={loading}
-                            loading={loading}
+                            }
                         >
-                            Đăng ký
-                        </Button>
-
-                        <TouchableOpacity
-                            style={LoginStyle.backButton}
-                            onPress={() => nav.goBack()}
-                        >
-                            <Text style={LoginStyle.buttonText}>Quay lại</Text>
-                        </TouchableOpacity>
+                            {roles.map((r) => (
+                                <Menu.Item
+                                    key={r.field}
+                                    onPress={() => {
+                                        setState(r.field, "role");
+                                        setMenuVisible(false);
+                                    }}
+                                    title={r.label}
+                                />
+                            ))}
+                        </Menu>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                    {info.map((i, idx) => {
+                        return (
+                            <TextInput
+                                key={i.field}
+                                ref={(el) => (inputRefs.current[i.field] = el)}
+                                mode="outlined"
+                                autoCapitalize="sentences"
+                                value={newUser[i.field] || ""}
+                                onChangeText={(t) => setState(t, i.field)}
+                                style={LoginStyle.input}
+                                label={i.label}
+
+                                returnKeyType={isLast(idx) ? "done" : "next"}
+                                onSubmitEditing={() => {
+                                    if (!isLast(idx)) {
+                                        const nextField = info[idx + 1].field;
+                                        inputRefs.current[nextField]?.focus();
+                                    } else {
+                                        register();
+                                        Keyboard.dismiss();
+                                    }
+                                }}
+                            />
+                        );
+                    })}
+                <TextInput style={LoginStyle.input} disabled={true} value="ou@123" label="Mật khẩu mặc định" />
+                </View>
+            </ScrollView>
         </View>
     );
 };

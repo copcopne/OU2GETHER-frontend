@@ -6,7 +6,7 @@ import { ActivityIndicator, IconButton, Searchbar, Text } from "react-native-pap
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import LoginStyle from "../../styles/LoginStyle";
 
-const VerifyUser = () => {
+const UnlockAccount = () => {
     const tabBarHeight = useBottomTabBarHeight();
     const [page, setPage] = useState(1);
     const [users, setUsers] = useState([]);
@@ -18,7 +18,7 @@ const VerifyUser = () => {
         if (page > 0) {
             try {
                 setLoading(true);
-                let url = `${endpoints['getUnverifiedUsers']}?page=${page}`;
+                let url = `${endpoints['getLockedUsers']}?page=${page}`;
 
                 if (searchQuery) {
                     url = `${url}&kw=${searchQuery}`;
@@ -79,7 +79,7 @@ const VerifyUser = () => {
         const verify = async () => {
             try {
                 const token = await AsyncStorage.getItem("token");
-                await authApis(token).post(endpoints['verify'](item.id));
+                await authApis(token).post(endpoints['resetPasswordDeadline'](item.id));
                 console.info('done');
             } catch (error) {
                 console.error(error.respone.data);
@@ -141,4 +141,4 @@ const VerifyUser = () => {
         />
     </>);
 };
-export default VerifyUser;
+export default UnlockAccount;

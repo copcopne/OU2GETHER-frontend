@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
-import { Image, View, TextInput } from "react-native";
+import { Image, View, TextInput, Keyboard } from "react-native";
 import { Button, Chip, Text } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
@@ -10,12 +10,12 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
     const currentUser = useContext(UserContext);
     const { setSnackbar } = useContext(SnackbarContext);
     const [content, setContent] = useState(postData.content);
-    const [loading, setLoading] = useState(false);
     const [isCommentSelected, setIsCommentSelected] = useState(postData.can_comment);
     const initialData = postData;
 
     const validate = () => {
-        if (content.trim().length === 0)
+        let data = content;
+        if (data.trim().length === 0)
             return false;
         return true;
     }
@@ -26,6 +26,7 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
     }
     const save = async () => {
         if (!validate()) {
+            Keyboard.dismiss();
             setSnackbar({
                 visible: true,
                 message: 'Nội dung không được trống!',
@@ -39,7 +40,6 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
                 return;
             }
             modalRef.current?.dismiss();
-            setLoading(true);
             const token = await AsyncStorage.getItem("token");
             const response = await authApis(token).patch(endpoints['updatePost'](postData.id), {
                 content: content,
@@ -60,8 +60,6 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
                 type: "error",
             });
             console.error(error);
-        } finally {
-            setLoading(false);
         }
     }
     return (
@@ -97,11 +95,10 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
                                     CreatePostStyle.chip,
                                     isCommentSelected && CreatePostStyle.chipActive,
                                 ]}
-                                icon={isCommentSelected ? "comment-check" : "comment-remove"}
                                 selected={isCommentSelected}
                                 onPress={() => setIsCommentSelected(!isCommentSelected)}
                             >
-                                Đang {isCommentSelected ? "bật" : "tắt"}
+                                Đang {isCommentSelected ? "bật" : "tắt"} bình luận
                             </Chip>
                         </View>
                     </View>

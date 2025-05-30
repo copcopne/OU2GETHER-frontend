@@ -1,4 +1,4 @@
-import { Alert, FlatList, Image, Platform, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import ProfileStyle from "../../styles/ProfileStyle";
 import Post from "../post/Post";
@@ -328,7 +328,7 @@ const Profile = ({ route }) => {
           <Text style={[ProfileStyle.name, ProfileStyle.m]}>Đang tải thông tin cá nhân</Text>
         }
 
-        {profileData?.is_myself ? <TouchableOpacity
+        {profileData?.is_myself && <TouchableOpacity
           style={[PostStyle.createPostButton, PostStyle.p, PostStyle.m_v]}
           onPress={() => nav.navigate("createPost", {
             onGoBack: (newPost) => {
@@ -344,7 +344,7 @@ const Profile = ({ route }) => {
             <Text style={PostStyle.name}>{currentUser?.last_name + " " + currentUser?.first_name}</Text>
             <Text style={PostStyle.caption}>Có gì mới?</Text>
           </View>
-        </TouchableOpacity> : null}
+        </TouchableOpacity>}
       </>
     )
   };

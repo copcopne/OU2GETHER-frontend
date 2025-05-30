@@ -27,6 +27,15 @@ const Setting = () => {
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity
+                        onPress={() => nav.navigate("unlockAccount")}
+                        style={SettingStyle.button}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                            <Icon size={32} source="account-alert" />
+                            <Text style={SettingStyle.buttonText}>Gia hạn đổi mật khẩu</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
                         onPress={() => nav.navigate("verifyUser")}
                         style={SettingStyle.button}
                     >

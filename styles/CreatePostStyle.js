@@ -3,6 +3,7 @@ import { RFValue } from "react-native-responsive-fontsize";
 
 export default StyleSheet.create({
   container: {
+    position:"relative",
     flex: 1,
     padding: 10,
   },

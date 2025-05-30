@@ -21,11 +21,16 @@ import { DispatchContext, SnackbarProvider, UserContext } from './configs/Contex
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { PortalProvider } from '@gorhom/portal';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Apis, { authApis, endpoints } from './configs/Apis';
 import { View } from 'react-native';
+import UnlockAccount from './components/setting/UnlockAccount';
+import CreatePostModal from './components/post/CreatePostModal';
+import Empty from './components/empty';
+import Search from './components/profile/Search';
 
 
 const Stack = createNativeStackNavigator();
@@ -136,6 +141,12 @@ const SettingStack = () => {
           title: "Xác nhận người dùng"
         }} />
       <Stack.Screen
+        name="unlockAccount"
+        component={UnlockAccount}
+        options={{
+          title: "Mở khóa tài khoản"
+        }} />
+      <Stack.Screen
         name="createUser"
         component={CreateUser}
         options={{
@@ -145,12 +156,13 @@ const SettingStack = () => {
 }
 const Tab = createBottomTabNavigator();
 const MainNavigator = () => {
-  return (
+  return (<>
     <Tab.Navigator
       screenOptions={({ route }) => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? (route.name === 'home' ? 'homeStack' : 'profileStack');
         return {
           headerShown: false,
+          tabBarShowLabel: false,
           tabBarStyle: {
             display: routeName === 'postDetail' ? 'none' : 'flex',
             position: "absolute",
@@ -164,15 +176,22 @@ const MainNavigator = () => {
         };
       }}
       initialRouteName='home'
+
     >
       <Tab.Screen name="home" component={HomeStack} options={{ title: "Trang chủ", tabBarIcon: () => <Icon size={30} source="home" /> }} />
-      {/* <Tab.Screen name="search" options={{ title: "Tìm kiếm", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
-      {/* <Tab.Screen name="createPost" component={CreatePost} options={{ title: "Tạo bài viết mới", tabBarIcon: () => <Icon size={30} source="home" /> }} /> */}
-      {/* <Tab.Screen name="chat" component={Profile} options={{ title: "Tin nhắn", tabBarIcon: () => <Icon size={30} source="account" /> }} /> */}
+      <Tab.Screen name="search" component={Search} options={{ title: "Tìm kiếm", tabBarIcon: () => <Icon size={30} source="magnify" /> }} />
+      <Tab.Screen
+        name="plus"
+        component={Empty}
+        options={{
+          tabBarButton: () => <CreatePostModal />
+        }}
+      />
       <Tab.Screen name="profile" component={ProfileStack} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
-      <Tab.Screen name="setting" component={SettingStack} options={{ title: "Cài đặt", tabBarIcon: () => <Icon size={30} source="cog" /> }} />
+      <Tab.Screen name="setting" component={SettingStack} options={{ title: "Tùy chọn", tabBarIcon: () => <Icon size={30} source="menu" /> }} />
     </Tab.Navigator>
-  );
+
+  </>);
 };
 
 const App = () => {
@@ -235,9 +254,11 @@ const App = () => {
             <SnackbarProvider>
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <BottomSheetModalProvider>
-                  <NavigationContainer>
-                    {user ? <MainNavigator /> : <AuthNavigator />}
-                  </NavigationContainer>
+                  <PortalProvider>
+                    <NavigationContainer>
+                      {user ? <MainNavigator /> : <AuthNavigator />}
+                    </NavigationContainer>
+                  </PortalProvider>
                 </BottomSheetModalProvider>
               </GestureHandlerRootView>
             </SnackbarProvider>

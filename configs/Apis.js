@@ -17,6 +17,7 @@ export const endpoints = {
 
     followUser: (user_id) => `/users/${user_id}/follow/`,
 
+    getLockedUsers: 'users/locked-users/',
     resetPasswordDeadline: (user_id) => `/users/${user_id}reset-password-deadline/`,
 
     getUnverifiedUsers: '/users/unverified-users/',

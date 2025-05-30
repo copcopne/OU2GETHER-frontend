@@ -1,6 +1,6 @@
 import { useState, useRef, useContext } from "react";
 import { Keyboard, TouchableOpacity, View } from "react-native";
-import { Button, Dialog, PaperProvider, Portal, Text, TextInput } from "react-native-paper";
+import { Button, Dialog, Portal, Text, TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginStyle from "../../styles/LoginStyle";
 import { useNavigation } from "@react-navigation/native";

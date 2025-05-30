@@ -1,7 +1,7 @@
 import { useContext, useLayoutEffect, useState } from "react";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
 import { Image, View, Text, TextInput, TouchableOpacity, ScrollView, Keyboard } from "react-native";
-import { Chip } from "react-native-paper";
+import { ActivityIndicator, Chip } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { useNavigation } from "@react-navigation/native";
@@ -10,7 +10,7 @@ import CreatePostStyle from "../../styles/CreatePostStyle";
 const CreatePost = ({ route }) => {
     const { onGoBack } = route.params || {};
     const { setSnackbar } = useContext(SnackbarContext);
-    const [content, setContent] = useState("");
+    const [content, setContent] = useState('');
     const currentUser = useContext(UserContext);
     const [loading, setLoading] = useState(false);
     const [isCommentSelected, setIsCommentSelected] = useState(true);
@@ -24,16 +24,17 @@ const CreatePost = ({ route }) => {
                 </TouchableOpacity>
             ),
         });
-    }, [nav]);
+    }, [nav, content]);
 
     const validate = () => {
-        if (content.trim().length === 0)
+        let data = content;
+        if (data.trim().length === 0)
             return false;
         return true;
     }
     const upload = async () => {
-        if (!validate()){
-            Keyboard.dismiss();
+        Keyboard.dismiss();
+        if (!validate()) {
             setSnackbar({
                 visible: true,
                 message: 'Vui lòng nhập nội dung',
@@ -65,6 +66,9 @@ const CreatePost = ({ route }) => {
     }
     return (
         <View style={[CreatePostStyle.container]}>
+            {loading && <View style={{ zIndex: 999, position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: "rgba(0,0,0,0.1)" }}>
+                <ActivityIndicator size="large" color="black" />
+            </View>}
             <View style={CreatePostStyle.createPostCard}>
                 <Image style={CreatePostStyle.avatar} source={{ uri: currentUser?.avatar }} />
                 <View style={CreatePostStyle.inputSection}>
@@ -79,7 +83,7 @@ const CreatePost = ({ route }) => {
                         value={content}
                         onChangeText={setContent}
                     />
-                    
+
                     <View style={CreatePostStyle.chipRow}>
                         <Chip
                             style={[

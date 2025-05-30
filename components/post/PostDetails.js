@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, View, TextInput, Keyboard, RefreshControl, FlatList } from "react-native";
+import { KeyboardAvoidingView, View, TextInput, Keyboard, RefreshControl } from "react-native";
 import { ActivityIndicator, IconButton, Text } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import dayjs from "dayjs";
@@ -12,7 +12,7 @@ import { authApis, endpoints } from "../../configs/Apis";
 import LoginStyle from "../../styles/LoginStyle";
 import Post from "./Post";
 import { useNavigation } from "@react-navigation/native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 
 dayjs.extend(relativeTime);
@@ -120,7 +120,8 @@ const PostDetail = ({ route }) => {
     }
 
     const validateComment = () => {
-        if (newComment.trim().length === 0)
+        let data = newComment;
+        if (data.trim().length === 0)
             return false;
         return true;
     };
@@ -141,8 +142,13 @@ const PostDetail = ({ route }) => {
             const res = await authApis(token).post(endpoints['commentOnPost'](postData.id), {
                 content: newComment
             });
+            await fetchPost();
+            
             setComment([res.data, ...comment]);
             setNewComment("");
+
+            if (onUpdateSuccess)
+                onUpdateSuccess(postRes.data);
         } catch (error) {
             if (error.response.status === 403)
                 setSnackbar({

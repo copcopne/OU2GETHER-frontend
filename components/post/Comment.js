@@ -9,10 +9,9 @@ import LoginStyle from '../../styles/LoginStyle';
 import { SnackbarContext, UserContext } from '../../configs/Contexts';
 import { Dialog, Portal, Button } from 'react-native-paper';
 import CommentStyle from '../../styles/CommentStyle';
-const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSuccess }) => {
+const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
 
     const [commentData, setCommentData] = useState(initialCommentData);
-    console.info(commentData);
 
     const reactions = [
         { type: 'like', icon: '👍', label: 'Đã Thích', color: "#3C3CCC" },
@@ -28,6 +27,7 @@ const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSucc
 
     const optionsRef = useRef(null);
     const [showOptions, setShowOptions] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [editing, setEditing] = useState(false);
     const [editedComment, setEditedComment] = useState('');
@@ -79,7 +79,8 @@ const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSucc
     const reactionDisplay = getReactionDisplay();
 
     const validateComment = () => {
-        if (editedComment.trim().length === 0)
+        let data = editedComment;
+        if (data.trim().length === 0)
             return false;
         return true;
     };
@@ -106,7 +107,6 @@ const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSucc
                 message: "Chỉnh sửa thành công!",
                 type: "success",
             });
-            commentInputRef?.current.enable();
         } catch (error) {
             let msg;
             if (error.response?.status === 403)
@@ -138,6 +138,7 @@ const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSucc
     const handleDeleteComment = async () => {
         hideDialog();
         try {
+            setLoading(true);
             const token = await AsyncStorage.getItem("token");
             await authApis(token).delete(endpoints['comment'](commentData.id));
             setSnackbar({
@@ -163,11 +164,12 @@ const Comment = ({ postAuthor, initialCommentData, commentInputRef, onDeleteSucc
                 type: "error",
             });
         } finally {
+            setLoading(false);
         }
     }
 
     return (
-        <TouchableOpacity style={[PostStyle.r, PostStyle.p, { alignItems: "flex-start" }, editing ? { backgroundColor: "#eeeeee", paddingVertical: 12 } : null]}
+        <TouchableOpacity style={[PostStyle.r, PostStyle.p, { alignItems: "flex-start" }, (editing || loading || showOptions) && { backgroundColor: "#eeeeee"}, editing && {paddingVertical: 12}]}
             ref={optionsRef}
             onLongPress={() => (!editing && canOpenOptions) ? setShowOptions(true) : null}
         >
