@@ -33,7 +33,7 @@ const VerifyUser = () => {
                 if (res.data.next === 'null')
                     setPage(0);
             } catch (error) {
-                console.error(error.data);
+                console.error(error);
             } finally {
                 setLoading(false);
             }
@@ -82,10 +82,8 @@ const VerifyUser = () => {
                 await authApis(token).post(endpoints['verify'](item.id));
                 console.info('done');
             } catch (error) {
-                console.error(error.respone.data);
-            } finally {
-                console.log("pressed");
-            };
+                console.error(error);
+            }
         };
 
         return (

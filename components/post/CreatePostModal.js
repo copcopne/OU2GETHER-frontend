@@ -58,8 +58,8 @@ const CreatePostModal = () => {
     }
     return (<>
         <TouchableOpacity style={{ marginTop: 5, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
-            <Icon size={30} source="plus-circle" color="#1919FF" />
-            <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "#1919FF" }]}>Tạo bài viết</Text>
+            <Icon size={30} source="plus-circle" color="black" />
+            <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "black" }]}>Tạo bài viết</Text>
         </TouchableOpacity>
         <Portal>
             <BottomSheet

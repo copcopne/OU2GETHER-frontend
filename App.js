@@ -107,6 +107,21 @@ const ProfileStack = () => {
     </Stack.Navigator>
   );
 };
+const SearchStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="search" component={Search}/>
+      <Stack.Screen
+        name="profileStack"
+        component={Profile}
+        options={({ route }) => ({
+          title: "Trang cá nhân",
+          headerShown: true,
+          headerBackTitleVisible: false
+        })} />
+    </Stack.Navigator>
+  );
+}
 const SettingStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }}>
@@ -172,23 +187,29 @@ const MainNavigator = () => {
             elevation: 0,
             backgroundColor: "#fff",
             borderTopWidth: 0
+          },
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            if (route.name === 'home') iconName = 'home';
+            else if (route.name === 'search') iconName = 'magnify';
+            else if (route.name === 'profile') iconName = 'account';
+            else if (route.name === 'setting') iconName = 'menu';
+
+            if (route.name === 'plus') return null;
+
+            return <Icon source={iconName} size={30} color={focused ? '#0865fe' : '#888'} />;
           }
         };
       }}
       initialRouteName='home'
-
     >
-      <Tab.Screen name="home" component={HomeStack} options={{ title: "Trang chủ", tabBarIcon: () => <Icon size={30} source="home" /> }} />
-      <Tab.Screen name="search" component={Search} options={{ title: "Tìm kiếm", tabBarIcon: () => <Icon size={30} source="magnify" /> }} />
-      <Tab.Screen
-        name="plus"
-        component={Empty}
-        options={{
-          tabBarButton: () => <CreatePostModal />
-        }}
+      <Tab.Screen name="home" component={HomeStack} />
+      <Tab.Screen name="search" component={SearchStack} />
+      <Tab.Screen name="plus" component={Empty} options={{ tabBarButton: () => <CreatePostModal /> }}
       />
-      <Tab.Screen name="profile" component={ProfileStack} options={{ title: "Trang cá nhân", tabBarIcon: () => <Icon size={30} source="account" /> }} />
-      <Tab.Screen name="setting" component={SettingStack} options={{ title: "Tùy chọn", tabBarIcon: () => <Icon size={30} source="menu" /> }} />
+      <Tab.Screen name="profile" component={ProfileStack} />
+      <Tab.Screen name="setting" component={SettingStack} />
     </Tab.Navigator>
 
   </>);

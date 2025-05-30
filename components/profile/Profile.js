@@ -251,12 +251,10 @@ const Profile = ({ route }) => {
             <Text style={[ProfileStyle.m, ProfileStyle.username]}>
               {profileData?.username}
             </Text>
-            {profileData?.bio ? (
+            {profileData?.bio && (
               <Text style={[ProfileStyle.bio, ProfileStyle.m]}>
                 {profileData?.bio}
               </Text>
-            ) : (
-              <></>
             )}
 
             <TouchableOpacity
@@ -285,8 +283,7 @@ const Profile = ({ route }) => {
                 style={[
                   ProfileStyle.followersText,
                   profileData.number_of_followers > 0
-                    ? { marginLeft: 10 }
-                    : null,
+                    && { marginLeft: 10 }
                 ]}
               >
                 {profileData.number_of_followers} người theo dõi
