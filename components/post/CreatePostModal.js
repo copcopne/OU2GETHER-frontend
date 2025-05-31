@@ -56,11 +56,13 @@ const CreatePostModal = () => {
     const handleAddButtonPress = () => {
         bottomSheetRef?.current?.expand();
     }
-    return (<>
+    return (<View style={{position:"relative"}}>
+        <View style={{backgroundColor:"#f2f2f2", position: "absolute",left: "7%", top: -15, borderRadius: 70}}>
         <TouchableOpacity style={{ marginTop: 5, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
-            <Icon size={30} source="plus-circle" color="black" />
-            <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "black" }]}>Tạo bài viết</Text>
+            <Icon size={30} source="plus-circle" color="#2F2F2F" />
+            <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "#2F2F2F" }]}>Tạo bài viết</Text>
         </TouchableOpacity>
+        </View>
         <Portal>
             <BottomSheet
                 ref={bottomSheetRef}
@@ -119,6 +121,6 @@ const CreatePostModal = () => {
             </BottomSheet>
         </Portal>
         <PortalHost name="create_post_host" />
-    </>)
+    </View>)
 };
 export default CreatePostModal;

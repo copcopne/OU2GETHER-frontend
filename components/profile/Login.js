@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import { Text, TouchableOpacity, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, TouchableOpacity, Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
 import { Button, Dialog, Portal, TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -93,7 +93,7 @@ const Login = () => {
           return;
         }
         if (userdata['must_change_password'] === true) {
-          nav.navigate('changePassword', {userdata, forceChangePassword:true});
+          nav.navigate('changePassword', { userdata, forceChangePassword: true });
           return;
         }
         dispatch({
@@ -125,82 +125,81 @@ const Login = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
-        <Text style={LoginStyle.subTitle}>Đăng nhập vào</Text>
-        <Text style={LoginStyle.title}>OU2GETHER</Text>
+      <Text style={LoginStyle.subTitle}>Đăng nhập vào</Text>
+      <Text style={LoginStyle.title}>OU2GETHER</Text>
 
-        {info.map((i, idx) => {
-          const isPasswordField = i.field === "password";
-          const isSecure = i.secureTextEntry
-            ? isPasswordField
-              ? !showPassword
-              : !showConfirm
-            : false;
+      {info.map((i, idx) => {
+        const isPasswordField = i.field === "password";
+        const isSecure = i.secureTextEntry
+          ? isPasswordField
+            ? !showPassword
+            : !showConfirm
+          : false;
 
-          return (
-            <TextInput
-              key={i.field}
-              ref={(el) => (inputRefs.current[i.field] = el)}
-              mode="outlined"
-              autoCapitalize="none"
-              value={user[i.field] || ""}
-              onChangeText={(t) => setState(t, i.field)}
-              style={LoginStyle.input}
-              label={i.label}
-              secureTextEntry={i.secureTextEntry ? isSecure : false}
-              right={
-                i.secureTextEntry ? (
-                  <TextInput.Icon
-                    icon={
-                      (isPasswordField && showPassword)
-                        ? "eye-off"
-                        : "eye"
-                    }
-                    onPress={() => {
-                      if (isPasswordField) setShowPassword(!showPassword);
-                    }}
-                  />
-                ) : null
+        return (
+          <TextInput
+            key={i.field}
+            ref={(el) => (inputRefs.current[i.field] = el)}
+            mode="outlined"
+            autoCapitalize="none"
+            value={user[i.field] || ""}
+            onChangeText={(t) => setState(t, i.field)}
+            style={LoginStyle.input}
+            label={i.label}
+            secureTextEntry={i.secureTextEntry ? isSecure : false}
+            right={
+              i.secureTextEntry ? (
+                <TextInput.Icon
+                  icon={
+                    (isPasswordField && showPassword)
+                      ? "eye-off"
+                      : "eye"
+                  }
+                  onPress={() => {
+                    if (isPasswordField) setShowPassword(!showPassword);
+                  }}
+                />
+              ) : null
+            }
+            returnKeyType={isLast(idx) ? "done" : "next"}
+            onSubmitEditing={() => {
+              if (!isLast(idx)) {
+                const nextField = info[idx + 1].field;
+                inputRefs.current[nextField]?.focus();
+              } else {
+                login();
               }
-              returnKeyType={isLast(idx) ? "done" : "next"}
-              onSubmitEditing={() => {
-                if (!isLast(idx)) {
-                  const nextField = info[idx + 1].field;
-                  inputRefs.current[nextField]?.focus();
-                } else {
-                  login();
-                }
-              }}
-            />
-          );
-        })}
-        <Portal>
-          <Dialog visible={visible} onDismiss={hideDialog}>
-            <Dialog.Title>Lỗi</Dialog.Title>
-            <Dialog.Content>
-              <Text variant="bodyMedium">{msg}</Text>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={hideDialog}>OK</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
+            }}
+          />
+        );
+      })}
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Title>Lỗi</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">{msg}</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hideDialog}>OK</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
 
-        <Button
-          onPress={login}
-          disabled={loading}
-          loading={loading}
-          mode="contained"
-        >
-          Đăng nhập
-        </Button>
+      <Button
+        onPress={login}
+        disabled={loading}
+        loading={loading}
+        mode="contained"
+      >
+        Đăng nhập
+      </Button>
 
-        <TouchableOpacity
-          style={LoginStyle.backButton}
-          onPress={() => nav.goBack()}
-        >
-          <Text style={LoginStyle.buttonText}>Quay lại</Text>
-        </TouchableOpacity>
-
+      <TouchableOpacity
+        style={LoginStyle.backButton}
+        onPress={() => nav.goBack()}
+      >
+        <Text style={LoginStyle.buttonText}>Quay lại</Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };

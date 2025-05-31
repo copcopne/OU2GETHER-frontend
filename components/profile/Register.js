@@ -2,13 +2,15 @@ import { Keyboard } from "react-native";
 import { useState, useRef } from "react";
 import { Text, View, TouchableOpacity, ScrollView, Image, Platform, Alert, KeyboardAvoidingView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
-import {TextInput, Button } from "react-native-paper";
+import { TextInput, Button } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import Apis, { endpoints } from "../../configs/Apis";
 import RegisterStyle from "../../styles/RegisterStyle";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Register = () => {
+  const insets = useSafeAreaInsets();
   const [newUser, setNewUser] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -133,7 +135,7 @@ const Register = () => {
       nav.goBack();
     } catch (error) {
       let message = "";
-      
+
       if (error.response && error.response.data) {
         const data = error.response.data;
         const firstKey = Object.keys(data)[0];
@@ -197,16 +199,12 @@ const Register = () => {
   return (
     <View style={RegisterStyle.container}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
+        behavior="position"
       ><ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 16 }}
         keyboardShouldPersistTaps="handled"
       >
-          <Text style={LoginStyle.title}>
-            ĐĂNG KÝ TÀI KHOẢN OU2GETHER
-          </Text>
-
           <TouchableOpacity onPress={() => onImagePress('cover')}>
             {newUser.cover ? (
               <Image source={{ uri: newUser.cover.uri }} style={RegisterStyle.coverImage} />
@@ -249,7 +247,7 @@ const Register = () => {
                   key={i.field}
                   ref={(el) => (inputRefs.current[i.field] = el)}
                   mode="outlined"
-                  autoCapitalize= {(isPasswordField || isConfirmField) ? "none" : "sentences"}
+                  autoCapitalize={(isPasswordField || isConfirmField) ? "none" : "sentences"}
                   value={newUser[i.field] || ""}
                   onChangeText={(t) => setState(t, i.field)}
                   style={LoginStyle.input}
@@ -293,13 +291,6 @@ const Register = () => {
             >
               Đăng ký
             </Button>
-
-            <TouchableOpacity 
-            style={LoginStyle.backButton}
-            onPress={() => nav.goBack()} 
-          >
-            <Text style={LoginStyle.buttonText}>Quay lại</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

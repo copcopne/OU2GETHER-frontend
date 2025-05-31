@@ -31,7 +31,7 @@ import UnlockAccount from './components/setting/UnlockAccount';
 import CreatePostModal from './components/post/CreatePostModal';
 import Empty from './components/empty';
 import Search from './components/profile/Search';
-import AllChats from './components/Chat/AllChats';
+import AllChats from './components/chat/AllChats';
 import Constants from 'expo-constants';
 
 const Stack = createNativeStackNavigator();
@@ -40,8 +40,10 @@ const AuthNavigator = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='anonymous'>
       <Stack.Screen name="anonymous" component={Anonymous} options={{ title: "Chào mừng bạn đến với OU2GETHER" }} />
       <Stack.Screen name="login" component={Login} options={{ title: "Đăng nhập" }} />
-      <Stack.Screen name="register" component={Register} options={{ title: "Đăng ký" }} />
-      <Stack.Screen name="changePassword" component={ChangePassword} options={{ title: "Đổi mật khẩu" }} />
+      <Stack.Screen name="register" component={Register} options={{ title: "Đăng ký tài khoản", headerShown: true,
+          headerBackTitleVisible: false }} />
+      <Stack.Screen name="changePassword" component={ChangePassword} options={{ title: "Đổi mật khẩu", headerShown: true,
+          headerBackTitleVisible: false }} />
     </Stack.Navigator>
   );
 }
@@ -194,7 +196,7 @@ const MainNavigator = () => {
             left: 0,
             right: 0,
             elevation: 0,
-            backgroundColor: "#fff",
+            backgroundColor: "#f2f2f2",
             borderTopWidth: 0
           },
           tabBarIcon: ({ focused, color, size }) => {
@@ -215,8 +217,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen name="home" component={HomeStack} />
       <Tab.Screen name="search" component={SearchStack} />
-      <Tab.Screen name="plus" component={Empty} options={{ tabBarButton: () => <CreatePostModal /> }}
-      />
+      <Tab.Screen name="plus" component={Empty} options={{ tabBarButton: () => <CreatePostModal /> }}/>
       <Tab.Screen name="profile" component={ProfileStack} />
       <Tab.Screen name="setting" component={SettingStack} />
     </Tab.Navigator>

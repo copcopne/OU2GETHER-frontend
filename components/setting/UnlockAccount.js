@@ -112,12 +112,13 @@ const UnlockAccount = () => {
 
     return (<>
         <Searchbar
-
             placeholder="Tìm kiếm..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={{
-                backgroundColor: '#f2f2f2',
+                marginTop: 10,
+                marginHorizontal: 10,
+                backgroundColor: 'white',
             }}
             iconColor="#888"
             placeholderTextColor="#aaa"

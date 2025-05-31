@@ -25,15 +25,15 @@ const LoginStyle = StyleSheet.create({
     marginTop: 16,
   },
   backButton: {
-    backgroundColor: "#555",
+    backgroundColor: "#e5dcf3",
     paddingVertical: 10,
     borderRadius: 24,
     alignItems: "center",
     marginTop: 16,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    color: "black",
+    fontSize: 14,
     fontWeight: "600",
   },
   p: {

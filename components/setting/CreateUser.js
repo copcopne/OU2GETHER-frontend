@@ -3,13 +3,14 @@ import { useState, useRef, useLayoutEffect } from "react";
 import { View, ScrollView, Alert, Button } from "react-native";
 import { ActivityIndicator, TextInput, Menu, IconButton, Text } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
-import Apis, { authApis, endpoints } from "../../configs/Apis";
+import { authApis, endpoints } from "../../configs/Apis";
 import RegisterStyle from "../../styles/RegisterStyle";
 import { useNavigation } from "@react-navigation/native";
 import { Asset } from 'expo-asset';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CreateUser = () => {
+    
     const [newUser, setNewUser] = useState({ role: 1 });
     const [loading, setLoading] = useState(false);
 

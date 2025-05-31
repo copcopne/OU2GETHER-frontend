@@ -180,9 +180,10 @@ const PostDetail = ({ route }) => {
     const renderHeader = () => {
         return <Post initialPostData={postData} commentInputRef={commentInputRef} onUpdateSuccess={onUpdateSuccess} onDeleteSuccess={handleDeletePost} />
     }
+    
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1, backgroundColor: "white" }}
+            style={{ flex: 1, backgroundColor: "white", width: "100%" }}
             behavior="padding"
             keyboardVerticalOffset={insets.bottom + 45}
         >

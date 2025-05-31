@@ -188,23 +188,14 @@ const Home = () => {
           }}>
           <Text style={HomeStyle.headerText}>OU2GETHER</Text>
         </TouchableOpacity>
-        <View
-          style={{
-            padding: 5,
-            borderRadius: 999,
-            backgroundColor: 'rgba(0,0,0,0.05)',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
+        
           <IconButton
             size={20}
             icon="message-text-outline"
             iconColor="black"
             onPress={() => nav.navigate("allChats")}
-            style={{ margin: 0 }}
+            style={{ marginVertical: 5 }}
           />
-        </View>
       </View>
 
 
