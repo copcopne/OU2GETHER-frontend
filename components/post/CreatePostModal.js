@@ -1,6 +1,6 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
-import { Image, View, TextInput, TouchableOpacity, Keyboard, Text } from "react-native";
+import { BackHandler, Image, View, TextInput, TouchableOpacity, Keyboard, Text } from "react-native";
 import { ActivityIndicator, Button, Chip, Icon } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
@@ -15,6 +15,7 @@ const CreatePostModal = () => {
     const currentUser = useContext(UserContext);
     const [loading, setLoading] = useState(false);
     const [isCommentSelected, setIsCommentSelected] = useState(true);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     const bottomSheetRef = useRef(null);
 
@@ -56,12 +57,24 @@ const CreatePostModal = () => {
     const handleAddButtonPress = () => {
         bottomSheetRef?.current?.expand();
     }
-    return (<View style={{position:"relative"}}>
-        <View style={{backgroundColor:"#f2f2f2", position: "absolute",left: "7%", top: -15, borderRadius: 70}}>
-        <TouchableOpacity style={{ marginTop: 5, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
-            <Icon size={30} source="plus-circle" color="#2F2F2F" />
-            <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "#2F2F2F" }]}>Tạo bài viết</Text>
-        </TouchableOpacity>
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            if (isSheetOpen) {
+                bottomSheetRef.current?.close();
+                return true;
+            }
+            return false;
+        });
+
+        return () => backHandler.remove();
+    }, [isSheetOpen]);
+
+    return (<View style={{ position: "relative" }}>
+        <View style={{ backgroundColor: "#f2f2f2", position: "absolute", left: "7%", top: -15, borderRadius: 100 }}>
+            <TouchableOpacity style={{ marginTop: 5, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
+                <Icon size={30} source="plus-circle" color="#2F2F2F" />
+                <Text style={[PostStyle.date, { fontSize: 12, fontWeight: 700, color: "#2F2F2F" }]}>Tạo bài viết</Text>
+            </TouchableOpacity>
         </View>
         <Portal>
             <BottomSheet
@@ -69,6 +82,9 @@ const CreatePostModal = () => {
                 snapPoints={["95%"]}
                 index={-1}
                 enablePanDownToClose={true}
+                onChange={(index) => {
+                    setIsSheetOpen(index !== -1);
+                }}
             >
                 <BottomSheetView style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative', paddingVertical: 8 }}>

@@ -224,7 +224,7 @@ const PostDetail = ({ route }) => {
             <View
                 style={{
                     marginHorizontal: 20,
-                    marginBottom: 20,
+                    marginBottom: 30,
                     backgroundColor: "#EFEFEF",
                     borderRadius: 18,
                     flexDirection: "row",

@@ -1,5 +1,5 @@
 import { Image, TouchableOpacity, View } from "react-native";
-import { Button, Dialog, IconButton, Portal, Text } from "react-native-paper";
+import { Button, Card, Checkbox, Dialog, IconButton, Portal, Text } from "react-native-paper";
 import PostStyle from "../../styles/PostStyle";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
@@ -20,6 +20,13 @@ dayjs.locale('vi');
 const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) => {
 
     const [postData, setPostData] = useState(initialPostData);
+    const [pollData, setPollData] = useState(initialPostData.post_type === 'poll' ? initialPostData.poll : null);
+    const [options, setOptions] = useState([]);
+    const [oldOptions, setOldOptions] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState([]);
+    const [isDiff, setIsDiff] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const reactions = [
         { type: 'like', icon: '👍', label: 'Đã Thích', color: "#3C3CCC" },
         { type: 'love', icon: '💖', label: 'Yêu thích', color: "#CC99A2" },
@@ -84,7 +91,64 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
 
     useEffect(() => {
         setPostData(initialPostData);
+        setPollData(initialPostData.post_type === 'poll' ? initialPostData.poll : null);
+        const options = initialPostData.post_type === 'poll' ? initialPostData.poll?.options : null;
+        setOptions(options);
+
+        if (options) {
+            const voted = options
+                .filter(option => option.is_voted === true)
+                .map(option => option.id);
+            setOldOptions(voted);
+            setSelectedOptions(voted);
+        }
     }, [initialPostData]);
+
+    useEffect(() => {
+        const setOld = new Set(oldOptions);
+        const setNew = new Set(selectedOptions);
+        if ((oldOptions.length !== selectedOptions.length) || (setOld.size !== setNew.size)) {
+            setIsDiff(true);
+            return;
+        }
+        for (let item of setOld)
+            if (!setNew.has(item)) {
+                setIsDiff(true); 
+                return;
+            }
+
+        setIsDiff(false);
+    }, [selectedOptions]);
+
+    const toggleOption = (optionId) => {
+        setSelectedOptions((prev) => {
+            if (prev.includes(optionId)) {
+                return prev.filter(id => id !== optionId);
+            } else {
+                return [...prev, optionId];
+            }
+        });
+    };
+
+    const handleSubmitPollOptions = async () => {
+        if(isDiff) {
+            try {
+                setLoading(true);
+                const token = await AsyncStorage.getItem("token");
+                const result = authApis(token).post(endpoints['vote'], {
+                    options_ids: selectedOptions
+                });
+                setPostData(result.data);
+                if(onUpdateSuccess)
+                    onDeleteSuccess(result.data);
+            } catch (error) {
+
+            } finally {
+                setLoading(false);
+            }
+        }
+
+    }
 
     const handleToggleComment = async () => {
         setShowOptions(false);
@@ -184,10 +248,11 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 from={showOptionsRef}
                 onRequestClose={() => setShowOptions(false)}
                 placement="auto"
-                arrowSize={{ width: 0, height: 0 }}
+                arrowSize={{ width: 20, height: 10 }}
                 backgroundStyle={{ backgroundColor: 'transparent' }}
+                popoverStyle={{ borderRadius: 15, backgroundColor: "#eeeeee" }}
             >
-                <View style={{ backgroundColor: "#eeeeee", borderColor:"#ccc", borderWidth: 1, width: "100%", alignItems: "center" }}>
+                <View style={{ backgroundColor: "#eeeeee", width: "100%", alignItems: "center" }}>
                     {isMySelf ? <><TouchableOpacity
                         style={{ padding: 20, width: '100%', alignItems: 'center' }}
                         onPress={() => {
@@ -221,6 +286,40 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
             <View>
                 <Text style={[PostStyle.content, PostStyle.m_v]} >{postData?.content}</Text>
             </View>
+            {pollData &&
+                <Card style={{margin: 8}}>
+                    <Card.Title
+                    titleStyle={{fontWeight:"bold", fontSize: 18}}
+                        title={pollData.question}
+                        subtitle={pollData.is_ended
+                            ? "Khảo sát này đã kết thúc"
+                            : `Kết thúc sau ${dayjs(pollData?.end_time).fromNow(true)}`}
+                    />
+                    <Card.Content>
+                        {options.map((option) => (
+                            <Checkbox.Item
+                                key={option.id}
+                                label={option.content}
+                                status={selectedOptions.includes(option.id) ? "checked" : "unchecked"}
+                                disabled={pollData.is_ended}
+                                onPress={() => toggleOption(option.id)}
+
+                            />
+                        ))}
+                        {(!pollData.is_ended && isDiff) && (
+                            <Button 
+                            style={{margin: 10}} 
+                            mode="contained" 
+                            onPress={handleSubmitPollOptions}
+                            disabled={loading}
+                            loading={loading}
+                            >
+                                Gửi câu trả lời
+                            </Button>
+                        )}
+                    </Card.Content>
+                </Card>
+            }
             <View style={[PostStyle.r, PostStyle.stats]}>
                 {postData?.interaction_count > 0 ? <TouchableOpacity onPress={() => { }}><Text style={[PostStyle.m_h, PostStyle.date]}>{postData?.interaction_count} tương tác</Text></TouchableOpacity> : <View></View>}
                 {postData?.comment_count > 0 ? <Text style={[PostStyle.m_h, PostStyle.date]}>{postData?.comment_count} bình luận</Text> : null}
@@ -232,8 +331,9 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 from={likeButtonRef}
                 onRequestClose={() => setShowReactions(false)}
                 placement="auto"
-                arrowSize={{ width: 0, height: 0 }}
+                arrowSize={{ width: 20, height: 10 }}
                 backgroundStyle={{ backgroundColor: 'transparent' }}
+                popoverStyle={{ borderRadius: 30, backgroundColor: "#eeeeee" }}
             >
                 <View style={[PostStyle.reactionBox]}>
                     {reactions.map((r, index) => (

@@ -18,8 +18,6 @@ export default StyleSheet.create({
     },
     optionsBox: {
         backgroundColor: "#eeeeee", 
-        borderColor:"#ccc", 
-        borderWidth: 1, 
         width: "100%", 
         alignItems: "center"
     },

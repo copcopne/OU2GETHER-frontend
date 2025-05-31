@@ -242,8 +242,9 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                 from={optionsRef}
                 onRequestClose={() => setShowOptions(false)}
                 placement="top"
-                arrowSize={{ width: 0, height: 0 }}
-                backgroundStyle={{ backgroundColor: 'transparent' }}
+                arrowSize={{width: 20, height: 10}}
+                popoverStyle={{backgroundColor:"#eeeeee"}}
+                backgroundStyle={{backgroundColor:"transparent"}}
             >
                 <View style={CommentStyle.optionsBox}>
                     { isMySelf && 
