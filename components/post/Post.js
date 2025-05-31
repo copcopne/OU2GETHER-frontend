@@ -60,6 +60,10 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const hideDialog = () => setVisible(false);
     const [msg, setMsg] = useState('');
 
+    useEffect(() => {
+        setPostData(initialPostData);
+    }, [initialPostData]);
+
     const sendReaction = async (type) => {
         try {
             const token = await AsyncStorage.getItem("token");
@@ -90,9 +94,8 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const reactionDisplay = getReactionDisplay();
 
     useEffect(() => {
-        setPostData(initialPostData);
-        setPollData(initialPostData.post_type === 'poll' ? initialPostData.poll : null);
-        const options = initialPostData.post_type === 'poll' ? initialPostData.poll?.options : null;
+        setPollData(postData.post_type === 'poll' ? postData.poll : null);
+        const options = postData.post_type === 'poll' ? postData.poll?.options : null;
         setOptions(options);
 
         if (options) {
@@ -102,7 +105,8 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
             setOldOptions(voted);
             setSelectedOptions(voted);
         }
-    }, [initialPostData]);
+
+    }, [postData]);
 
     useEffect(() => {
         const setOld = new Set(oldOptions);
@@ -113,12 +117,30 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
         }
         for (let item of setOld)
             if (!setNew.has(item)) {
-                setIsDiff(true); 
+                setIsDiff(true);
                 return;
             }
 
         setIsDiff(false);
     }, [selectedOptions]);
+
+    const getChangedOptions = () => {
+        const oldSet = new Set(oldOptions);
+        const newSet = new Set(selectedOptions);
+
+        const allOptionIds = new Set([...oldOptions, ...selectedOptions]);
+
+        const changed = [];
+        allOptionIds.forEach(id => {
+            const wasSelected = oldSet.has(id);
+            const isSelected = newSet.has(id);
+            if (wasSelected !== isSelected) {
+                changed.push(id);
+            }
+        });
+
+        return changed;
+    };
 
     const toggleOption = (optionId) => {
         setSelectedOptions((prev) => {
@@ -131,18 +153,45 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     };
 
     const handleSubmitPollOptions = async () => {
-        if(isDiff) {
+        if (isDiff) {
             try {
                 setLoading(true);
+                const changedOptions = getChangedOptions();
                 const token = await AsyncStorage.getItem("token");
-                const result = authApis(token).post(endpoints['vote'], {
-                    options_ids: selectedOptions
+                const result = await authApis(token).post(endpoints['vote'](postData.id), {
+                    option_ids: changedOptions
                 });
                 setPostData(result.data);
-                if(onUpdateSuccess)
-                    onDeleteSuccess(result.data);
-            } catch (error) {
 
+                if (onUpdateSuccess)
+                    onUpdateSuccess(result.data);
+
+                setSnackbar({
+                    visible: true,
+                    message: "Bình chọn thành công!",
+                    type: "success",
+                });
+
+            } catch (error) {
+                let msg;
+                if (error.response?.status === 403)
+                    msg = "Khảo sát đã hết hạn, không thể tham gia!";
+                else if (error.response?.status >= 404) {
+                    msg = "Lựa chọn bạn đã chọn không còn nữa!";
+                    const token = await AsyncStorage.getItem("token");
+                    const result = await authApis(token).get(endpoints['post'](postData.id));
+                    setPostData(result.data);
+                    if (onUpdateSuccess)
+                        onUpdateSuccess(result.data);
+                } else {
+                    msg = "Lỗi không xác định khi tham gia khảo sát!";
+                    console.error(error);
+                }
+                setSnackbar({
+                    visible: true,
+                    message: msg,
+                    type: "error",
+                });
             } finally {
                 setLoading(false);
             }
@@ -287,9 +336,9 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 <Text style={[PostStyle.content, PostStyle.m_v]} >{postData?.content}</Text>
             </View>
             {pollData &&
-                <Card style={{margin: 8}}>
+                <Card style={{ margin: 8 }}>
                     <Card.Title
-                    titleStyle={{fontWeight:"bold", fontSize: 18}}
+                        titleStyle={{ fontWeight: "bold", fontSize: 18 }}
                         title={pollData.question}
                         subtitle={pollData.is_ended
                             ? "Khảo sát này đã kết thúc"
@@ -307,12 +356,12 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                             />
                         ))}
                         {(!pollData.is_ended && isDiff) && (
-                            <Button 
-                            style={{margin: 10}} 
-                            mode="contained" 
-                            onPress={handleSubmitPollOptions}
-                            disabled={loading}
-                            loading={loading}
+                            <Button
+                                style={{ margin: 10 }}
+                                mode="contained"
+                                onPress={handleSubmitPollOptions}
+                                disabled={loading}
+                                loading={loading}
                             >
                                 Gửi câu trả lời
                             </Button>

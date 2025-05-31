@@ -233,14 +233,15 @@ const Home = () => {
           </View>
         }
         data={selectedTab === "all" ? posts : followingPost}
-        extraData={selectedTab === "all" ? posts : followingPost}
+        extraData={{posts, followingPost}}
         keyExtractor={item => `${selectedTab}-${item.id}`}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 16 }}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + 32 }}
         renderItem={renderItem}
         refreshing={refreshing}
         onRefresh={handleRefresh}
         onEndReached={fetchMore}
         onEndReachedThreshold={0.7}
+        removeClippedSubviews={true}
       />
     </SafeAreaView>
   );

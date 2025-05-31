@@ -379,7 +379,7 @@ const Profile = ({ route }) => {
           </View>
         }
         keyExtractor={item => `${item.id}`}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 16 }}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + 40 }}
         renderItem={renderItem}
         refreshing={refreshing}
         onEndReached={fetchMore}

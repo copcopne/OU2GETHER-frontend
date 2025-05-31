@@ -1,5 +1,5 @@
-import { useContext, useMemo, useState } from "react";
-import { Keyboard, View } from "react-native";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { BackHandler, Keyboard, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -102,15 +102,28 @@ const EditProfile = ({ profileData, modalRef }) => {
         }
     };
 
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            modalRef.current?.dismiss();
+            return true;
+        });
+
+        return () => backHandler.remove();
+    }, []);
+
     return (
         <>
+
             <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative', paddingVertical: 8 }}>
                 <View style={{ position: 'absolute', right: 16 }}>
-                    <Button onPress={() => save()}>Xong</Button>
+                    <Button onPress={() => save()}>XONG</Button>
+                </View>
+                <View style={{ position: 'absolute', left: 16 }}>
+                    <Button onPress={() => modalRef.current?.dismiss()}>HỦY</Button>
                 </View>
 
                 <View style={{ flex: 1, alignItems: 'center' }}>
-                    <Text variant="titleMedium">Chỉnh sửa thông tin</Text>
+                    <Text style={{ fontSize: 20, fontWeight: "800" }}>Chỉnh sửa thông tin</Text>
                 </View>
             </View>
             <View style={{ margin: 32 }}>

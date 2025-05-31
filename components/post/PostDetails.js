@@ -147,8 +147,6 @@ const PostDetail = ({ route }) => {
             setComment([res.data, ...comment]);
             setNewComment("");
 
-            if (onUpdateSuccess)
-                onUpdateSuccess(postRes.data);
         } catch (error) {
             if (error.response.status === 403)
                 setSnackbar({
