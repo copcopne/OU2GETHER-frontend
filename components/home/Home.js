@@ -1,9 +1,9 @@
-import { Text, View, TouchableOpacity, Image, FlatList, TouchableWithoutFeedback } from "react-native";
+import { Text, View, TouchableOpacity, Image, FlatList, RNActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Post from "../post/Post";
 import HomeStyle from "../../styles/Home";
 import PostStyle from "../../styles/PostStyle";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { SnackbarContext, UserContext } from "../../configs/Contexts";
@@ -17,66 +17,144 @@ const Home = () => {
   const currentUser = useContext(UserContext);
   const tabBarHeight = useBottomTabBarHeight();
   const { setSnackbar } = useContext(SnackbarContext);
-  const [selectedTab, setSelectedTab] = React.useState("all");
+
+  const [selectedTab, setSelectedTab] = useState("all");
+
   const [posts, setPosts] = useState([]);
-  const [followingPost, setFollowingPost] = useState([]);
   const [page, setPage] = useState(1);
+
+  const [followingPost, setFollowingPost] = useState([]);
   const [pageFollowing, setPageFollowing] = useState(1);
+
+  const [polls, setPolls] = useState([]);
+  const [pollPage, setPollPage] = useState(1);
+  const [pollLoading, setPollLoading] = useState(false);
+  const [pollHasNext, setPollHasNext] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const listRef = useRef(null);
 
+  const listRef = useRef(null);
   const scrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  const fetchPosts = async () => {
-    let res
+  const fetchPolls = async () => {
+    if (!pollHasNext) return;
     try {
-      setLoading(true);
-      let url = `${endpoints['posts']}`;
+      setPollLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const url = `${endpoints["posts"]}?poll=true&page=${pollPage}`;
+      const res = await authApis(token).get(url);
+      const results = res.data.results || [];
 
-      if (selectedTab === "following") {
-        url = `${endpoints['posts']}?following=true`;
-        if (pageFollowing > 0)
-          url = `${url}&page=${pageFollowing}`;
-      } else if (page > 0)
-        url = `${url}?page=${page}`;
-      const token = await AsyncStorage.getItem('token');
-      res = await authApis(token).get(url);
-
-      const results = res.data.results;
-      if (selectedTab === "all") {
-        if (page === 1) setPosts(results);
-        else {
-          const unique = results.filter(r => !posts.some(p => p.id === r.id));
-          setPosts(prev => [...prev, ...unique]);
-        }
+      if (pollPage === 1) {
+        setPolls(results);
+      } else {
+        const unique = results.filter((r) => !polls.some((p) => p.id === r.id));
+        setPolls((prev) => [...prev, ...unique]);
       }
-      else {
-        if (pageFollowing === 1) setFollowingPost(res.data.results);
-        else {
-          const unique = results.filter(r => !followingPost.some(p => p.id === r.id));
-          setFollowingPost(prev => [...prev, ...unique]);;
-        }
+      if (res.data.next === null) {
+        setPollHasNext(false);
       }
-
     } catch (error) {
+      console.error(error);
       setSnackbar({
         visible: true,
-        message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bài viết.`,
+        message: `Lỗi ${error?.response?.status || "không xác định"} khi fetch poll.`,
+        type: "error",
+      });
+    } finally {
+      setPollLoading(false);
+    }
+  };
+
+  const fetchPosts = async () => {
+    let res;
+    try {
+      setLoading(true);
+
+      const baseUrl = `${endpoints["posts"]}`;
+      const params = ["all=true"];
+
+      if (selectedTab === "following") {
+        params.push("following=true");
+        if (pageFollowing > 0) params.push(`page=${pageFollowing}`);
+      } else {
+        if (page > 0) params.push(`page=${page}`);
+      }
+
+      const url = `${baseUrl}?${params.join("&")}`;
+      const token = await AsyncStorage.getItem("token");
+      res = await authApis(token).get(url);
+
+      const results = res.data.results || [];
+
+      if (selectedTab === "all") {
+        if (page === 1) {
+          setPosts(results);
+        } else {
+          const unique = results.filter((r) => !posts.some((p) => p.id === r.id));
+          setPosts((prev) => [...prev, ...unique]);
+        }
+      } else {
+        if (pageFollowing === 1) {
+          setFollowingPost(results);
+        } else {
+          const unique = results.filter((r) => !followingPost.some((p) => p.id === r.id));
+          setFollowingPost((prev) => [...prev, ...unique]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setSnackbar({
+        visible: true,
+        message: `Lỗi ${error?.response?.status || "không xác định"} khi fetch bài viết.`,
         type: "error",
       });
       if (selectedTab === "all") {
         setPage(1);
-      } else setPageFollowing(1);
-      console.error(error);
+      } else {
+        setPageFollowing(1);
+      }
     } finally {
       setLoading(false);
-      if (res.data.next === null)
-        setPage(0)
-      if (res.data.next === null)
-        setPageFollowing(0)
+
+      if (res?.data?.next === null) {
+        if (selectedTab === "all") setPage(0);
+        else setPageFollowing(0);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTab === "all") {
+      if (page > 0) {
+        fetchPosts();
+      }
+    } else {
+      if (pageFollowing > 0) {
+        fetchPosts();
+      }
+    }
+  }, [selectedTab, page, pageFollowing]);
+
+  useEffect(() => {
+    if (selectedTab === "all") {
+      fetchPolls();
+    }
+  }, [selectedTab, pollPage]);
+
+  const fetchMore = () => {
+    if (loading || refreshing) return;
+    if (selectedTab === "all" && page > 0 && posts.length > 0) {
+      setPage((prev) => prev + 1);
+    } else if (
+      selectedTab === "following" &&
+      pageFollowing > 0 &&
+      followingPost.length > 0
+    ) {
+      setPageFollowing((prev) => prev + 1);
     }
   };
 
@@ -84,120 +162,196 @@ const Home = () => {
     try {
       setRefreshing(true);
       if (selectedTab === "all") {
+        setPolls([]);
+        setPollPage(1);
+        setPollHasNext(true);
+
         setPosts([]);
-        if (page !== 1) {
-          setPage(1);
-        } else {
-          await fetchPosts();
-        }
+        setPage(1);
+
+        await fetchPolls();
+        await fetchPosts();
       } else {
         setFollowingPost([]);
-        if (pageFollowing !== 1) {
-          setPageFollowing(1);
-        } else {
-          await fetchPosts();
-        }
+        setPageFollowing(1);
+        await fetchPosts();
       }
     } catch (error) {
+      console.error(error);
       setSnackbar({
         visible: true,
-        message: `Lỗi ${error?.response?.status || 'không xác định'} khi fetch bài viết.`,
+        message: `Lỗi ${error?.response?.status || "không xác định"} khi làm mới dữ liệu.`,
         type: "error",
       });
-      console.error(error);
     } finally {
       setRefreshing(false);
     }
-  }
+  };
 
   const handleOnUpdatePost = (updatedPost) => {
-    if (selectedTab === "all") {
-      setPosts(prev =>
-        prev.map(p => (p.id === updatedPost.id ? updatedPost : p))
+    if (updatedPost.post_type === "poll") {
+      setPolls((prev) =>
+        prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
       );
     } else {
-      setFollowingPost(prev =>
-        prev.map(p => (p.id === updatedPost.id ? updatedPost : p))
-      );
+      if (selectedTab === "all") {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+        );
+      } else {
+        setFollowingPost((prev) =>
+          prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+        );
+      }
     }
   };
 
   const handleOnDeletePost = (postId) => {
+    setPolls((prev) => prev.filter((p) => p.id !== postId));
     if (selectedTab === "all") {
-      setPosts(prev => prev.filter(p => p.id != postId))
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
     } else {
-      setFollowingPost(prev => prev.filter(p => p.id != postId))
+      setFollowingPost((prev) => prev.filter((p) => p.id !== postId));
     }
-  }
+  };
 
-  useEffect(() => {
-    if ((selectedTab === 'all' && page > 0) ||
-      (selectedTab === 'following' && pageFollowing > 0))
-      fetchPosts();
-  }, [page, pageFollowing, selectedTab]);
+  const renderPollItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={{ marginRight: 8 }}
+        onPress={() =>
+          nav.navigate("postDetail", {
+            initialPostData: item,
+            onUpdateSuccess: handleOnUpdatePost,
+            onDeleteSuccess: handleOnDeletePost,
+          })
+        }
+      >
+        <Post
+          initialPostData={item}
+          onUpdateSuccess={handleOnUpdatePost}
+          onDeleteSuccess={handleOnDeletePost}
+        />
+      </TouchableOpacity>
+    );
+  };
 
-  const fetchMore = () => {
-    if (!loading && !refreshing)
-      if (selectedTab === "all" && page > 0 && posts.length > 0)
-        setPage(page + 1);
-      else if (selectedTab === "following" && pageFollowing > 0 && followingPost.length > 0)
-        setPageFollowing(pageFollowing + 1);
-  }
   const renderHeader = () => {
     return (
-      <>
+      <View>
         <TouchableOpacity
           style={[PostStyle.createPostButton, PostStyle.p]}
-          onPress={() => nav.navigate("createPost", {
-            onGoBack: (newPost) => {
-              setPosts((prevPosts) => [newPost, ...prevPosts]);
-            }
-          })}
+          onPress={() =>
+            nav.navigate("createPost", {
+              onGoBack: (newPost) => {
+                if (newPost.post_type === "poll") {
+                  setPolls((prev) => [newPost, ...prev]);
+                } else {
+                  setPosts((prev) => [newPost, ...prev]);
+                }
+              },
+            })
+          }
         >
-          <Image
-            style={PostStyle.avatar}
-            source={{ uri: currentUser?.avatar }}
-          />
+          <Image style={PostStyle.avatar} source={{ uri: currentUser?.avatar }} />
           <View>
-            <Text style={PostStyle.name}>{currentUser?.last_name + " " + currentUser?.first_name}</Text>
+            <Text style={PostStyle.name}>
+              {currentUser?.last_name + " " + currentUser?.first_name}
+            </Text>
             <Text style={PostStyle.caption}>Có gì mới?</Text>
           </View>
         </TouchableOpacity>
-      </>
+
+        {selectedTab === "all" && polls.length > 0 && (
+          <View style={{ marginTop: 16 }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                marginBottom: 8,
+                paddingHorizontal: 12,
+              }}
+            >
+              📊 Khảo sát khả dụng
+            </Text>
+            <FlatList
+              data={polls}
+              horizontal={true}
+              keyExtractor={(item) => `poll-${item.id}`}
+              renderItem={renderPollItem}
+              showsHorizontalScrollIndicator={false}
+              onEndReached={() => {
+                if (!pollLoading && pollHasNext) {
+                  setPollPage((prev) => prev + 1);
+                }
+              }}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                pollLoading ? (
+                  <RNActivityIndicator
+                    style={{ marginRight: 8 }}
+                    size="small"
+                  />
+                ) : null
+              }
+              contentContainerStyle={{ paddingHorizontal: 12}}
+            />
+          </View>
+        )}
+
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            margin: 16,
+            marginBottom: 8,
+          }}
+        >
+          {selectedTab === "all" && "📰 Tất cả bài viết"}
+        </Text>
+      </View>
     );
   };
 
   const renderItem = ({ item }) => {
-    return (<TouchableOpacity
-      onPress={() =>
-        nav.navigate("postDetail",
-          { initialPostData: item, onUpdateSuccess: handleOnUpdatePost, onDeleteSuccess: handleOnDeletePost }
-        )}>
-      <Post initialPostData={item} onUpdateSuccess={handleOnUpdatePost} onDeleteSuccess={handleOnDeletePost} />
-    </TouchableOpacity>);
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          nav.navigate("postDetail", {
+            initialPostData: item,
+            onUpdateSuccess: handleOnUpdatePost,
+            onDeleteSuccess: handleOnDeletePost,
+          })
+        }
+      >
+        <Post
+          initialPostData={item}
+          onUpdateSuccess={handleOnUpdatePost}
+          onDeleteSuccess={handleOnDeletePost}
+        />
+      </TouchableOpacity>
+    );
   };
 
   return (
     <SafeAreaView style={HomeStyle.container}>
-
       <View style={HomeStyle.header}>
         <TouchableOpacity
           onPress={() => {
             scrollToTop();
             handleRefresh();
-          }}>
+          }}
+        >
           <Text style={HomeStyle.headerText}>OU2GETHER</Text>
         </TouchableOpacity>
-        
-          <IconButton
-            size={20}
-            icon="message-text-outline"
-            iconColor="black"
-            onPress={() => nav.navigate("allChats")}
-            style={{ marginVertical: 5 }}
-          />
+        <IconButton
+          size={20}
+          icon="message-text-outline"
+          iconColor="black"
+          onPress={() => nav.navigate("allChats")}
+          style={{ marginVertical: 5 }}
+        />
       </View>
-
 
       <View style={HomeStyle.tabContainer}>
         <TouchableOpacity onPress={() => setSelectedTab("all")}>
@@ -224,17 +378,17 @@ const Home = () => {
 
       <FlatList
         style={{ padding: 0 }}
-        ListFooterComponent={loading && <ActivityIndicator />}
         ref={listRef}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={() =>
-          <View style={{ flex: 1, padding: 32, alignItems: 'center' }}>
+        ListFooterComponent={loading && <ActivityIndicator />}
+        ListEmptyComponent={() => (
+          <View style={{ flex: 1, padding: 32, alignItems: "center" }}>
             <Text style={LoginStyle.subTitle}>Không có bài viết</Text>
           </View>
-        }
+        )}
         data={selectedTab === "all" ? posts : followingPost}
-        extraData={{posts, followingPost}}
-        keyExtractor={item => `${selectedTab}-${item.id}`}
+        extraData={{ posts, followingPost }}
+        keyExtractor={(item) => `${selectedTab}-${item.id}`}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 32 }}
         renderItem={renderItem}
         refreshing={refreshing}

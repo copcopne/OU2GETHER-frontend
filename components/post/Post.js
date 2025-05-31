@@ -44,9 +44,10 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const { setSnackbar } = useContext(SnackbarContext);
     const nav = useNavigation();
     const currentUser = useContext(UserContext);
+    const isAdmin = currentUser.role === 0;
     const authorId = postData?.author.id;
     const isMySelf = currentUser?.id === authorId;
-    const canOpenOptions = isMySelf || currentUser.role === 0;
+    const canOpenOptions = isMySelf || isAdmin;
     const getCurrentReaction = () =>
         postData.my_interaction
             ? reactions.find(r => r.type === postData.my_interaction)
@@ -59,6 +60,8 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const showDialog = () => setVisible(true);
     const hideDialog = () => setVisible(false);
     const [msg, setMsg] = useState('');
+
+    const [showResuls, setShowResults] = useState(false);
 
     useEffect(() => {
         setPostData(initialPostData);
@@ -196,6 +199,11 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 setLoading(false);
             }
         }
+
+    }
+
+    const handleShowResults = () => {
+        
 
     }
 
@@ -364,6 +372,15 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                                 loading={loading}
                             >
                                 Gửi câu trả lời
+                            </Button>
+                        )}
+                        {(pollData.is_ended && isAdmin) && (
+                            <Button
+                                style={{ margin: 10 }}
+                                mode="contained"
+                                onPress={handleShowResults}
+                            >
+                                Xem kết quả
                             </Button>
                         )}
                     </Card.Content>

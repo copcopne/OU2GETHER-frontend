@@ -78,17 +78,7 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
             setEndTime(null);
             return;
         }
-
-        const miniumTime = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 tieng
-        if (miniumTime.getTime() > date.getTime()) {
-            setSnackbar({
-                visible: true,
-                message: 'Thời gian tối thiểu cho khảo sát là 12 tiếng!',
-                type: "error",
-            });
-            setEndTime(null);
-            return;
-        }
+        
         setEndTime(date);
         setShowDatePicker(false);
     }

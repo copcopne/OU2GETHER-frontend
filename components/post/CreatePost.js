@@ -13,6 +13,7 @@ const CreatePost = ({ route }) => {
     const { setSnackbar } = useContext(SnackbarContext);
     const [content, setContent] = useState('');
     const currentUser = useContext(UserContext);
+    const isAdmin = currentUser.role === 0;
     const [loading, setLoading] = useState(false);
     const [isCommentSelected, setIsCommentSelected] = useState(true);
     const [isPollSelected, setIsPollSelected] = useState(false);
@@ -64,16 +65,7 @@ const CreatePost = ({ route }) => {
             setEndTime(null);
             return;
         }
-        const miniumTime = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 tieng
-        if (miniumTime.getTime() > date.getTime()) {
-            setSnackbar({
-                visible: true,
-                message: 'Thời gian tối thiểu cho khảo sát là 12 tiếng!',
-                type: "error",
-            });
-            setEndTime(null);
-            return;
-        }
+        
         setEndTime(date);
         setShowDatePicker(false);
     }
@@ -108,7 +100,7 @@ const CreatePost = ({ route }) => {
         }
         return true;
     }
-    
+
     const upload = async () => {
         Keyboard.dismiss();
         if (!validate()) {
@@ -182,16 +174,16 @@ const CreatePost = ({ route }) => {
                         >
                             {isCommentSelected ? "Bật" : "Tắt"} bình luận
                         </Chip>
-                        <Chip
-                            style={[
-                                CreatePostStyle.chip,
-                                isPollSelected && CreatePostStyle.chipActive,
-                            ]}
-                            selected={isPollSelected}
-                            onPress={() => setIsPollSelected(!isPollSelected)}
-                        >
-                            Khảo sát
-                        </Chip>
+                        {isAdmin && <Chip
+                                                                style={[
+                                                                    CreatePostStyle.chip,
+                                                                    isPollSelected && CreatePostStyle.chipActive,
+                                                                ]}
+                                                                selected={isPollSelected}
+                                                                onPress={() => setIsPollSelected(!isPollSelected)}
+                                                            >
+                                                                Khảo sát
+                                                            </Chip>}
                     </View>
                 </View>
             </View>

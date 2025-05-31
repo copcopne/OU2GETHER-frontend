@@ -14,6 +14,7 @@ const CreatePostModal = () => {
     const { setSnackbar } = useContext(SnackbarContext);
     const [content, setContent] = useState('');
     const currentUser = useContext(UserContext);
+    const isAdmin = currentUser.role === 0;
     const [loading, setLoading] = useState(false);
     const [isCommentSelected, setIsCommentSelected] = useState(true);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -56,16 +57,7 @@ const CreatePostModal = () => {
             setEndTime(null);
             return;
         }
-        const miniumTime = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 tieng
-        if (miniumTime.getTime() > date.getTime()) {
-            setSnackbar({
-                visible: true,
-                message: 'Thời gian tối thiểu cho khảo sát là 12 tiếng!',
-                type: "error",
-            });
-            setEndTime(null);
-            return;
-        }
+
         setEndTime(date);
         setShowDatePicker(false);
     }
@@ -128,6 +120,7 @@ const CreatePostModal = () => {
                 message: 'Đăng thành công!',
                 type: "success",
             });
+            bottomSheetRef?.current?.close();
         } catch (error) {
             setSnackbar({
                 visible: true,
@@ -215,7 +208,7 @@ const CreatePostModal = () => {
                                     >
                                         {isCommentSelected ? "Bật" : "Tắt"} bình luận
                                     </Chip>
-                                    <Chip
+                                    {isAdmin && <Chip
                                         style={[
                                             CreatePostStyle.chip,
                                             isPollSelected && CreatePostStyle.chipActive,
@@ -224,7 +217,7 @@ const CreatePostModal = () => {
                                         onPress={() => setIsPollSelected(!isPollSelected)}
                                     >
                                         Khảo sát
-                                    </Chip>
+                                    </Chip>}
                                 </View>
                             </View>
                         </View>
