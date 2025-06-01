@@ -140,7 +140,7 @@ const SettingStack = () => {
         name="settingStack"
         component={Setting}
         options={{
-          title: "Cài đặt"
+          title: "Tùy chọn"
         }} />
       <Stack.Screen
         name="changePassword"

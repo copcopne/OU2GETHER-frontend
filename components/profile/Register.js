@@ -244,6 +244,7 @@ const Register = () => {
 
               return (
                 <TextInput
+                  activeOutlineColor="#1c85fc"
                   key={i.field}
                   ref={(el) => (inputRefs.current[i.field] = el)}
                   mode="outlined"
@@ -285,6 +286,7 @@ const Register = () => {
 
             <Button
               mode="contained"
+              buttonColor="#1c85fc"
               onPress={register}
               disabled={loading}
               loading={loading}

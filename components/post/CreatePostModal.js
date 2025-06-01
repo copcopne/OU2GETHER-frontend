@@ -47,6 +47,7 @@ const CreatePostModal = () => {
     };
 
     const handleAddDate = (date) => {
+        setShowDatePicker(false);
         const now = new Date();
         if (now.getTime() > date.getTime()) {
             setSnackbar({
@@ -59,7 +60,6 @@ const CreatePostModal = () => {
         }
 
         setEndTime(date);
-        setShowDatePicker(false);
     }
 
     const validate = () => {
@@ -179,7 +179,7 @@ const CreatePostModal = () => {
                         </View>
                     </View>
                     <View style={[CreatePostStyle.container]}>
-                        {loading && <View style={{ zIndex: 999, position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: "rgba(0,0,0,0.1)" }}>
+                        {loading && <View style={{ zIndex: 999, position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: "rgba(0,0,0,0.05)" }}>
                             <ActivityIndicator size="large" color="black" />
                         </View>}
                         <View style={CreatePostStyle.createPostCard}>

@@ -1,7 +1,7 @@
 import { Keyboard } from "react-native";
 import { useState, useRef, useLayoutEffect } from "react";
 import { View, ScrollView, Alert, Button } from "react-native";
-import { ActivityIndicator, TextInput, Menu, IconButton, Text } from "react-native-paper";
+import { ActivityIndicator, TextInput, Menu } from "react-native-paper";
 import LoginStyle from "../../styles/LoginStyle";
 import { authApis, endpoints } from "../../configs/Apis";
 import RegisterStyle from "../../styles/RegisterStyle";
@@ -157,15 +157,11 @@ const CreateUser = () => {
         }
     };
 
-    if (loading)
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "transparent" }}>
-                <ActivityIndicator size="large" color="black" />
-            </View>
-        );
-
     return (
-        <View style={RegisterStyle.container}>
+        <View style={[RegisterStyle.container, {position:"relative"}]}>
+            {loading && <View style={{ zIndex: 999, position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: "rgba(0,0,0,0.01)" }}>
+                <ActivityIndicator size="large" color="black" />
+            </View>}
             <ScrollView style={{ width: "100%" }}>
                 <View style={[LoginStyle.p]}>
                     <View style={{ marginBottom: 10 }}>
@@ -174,6 +170,7 @@ const CreateUser = () => {
                             onDismiss={() => setMenuVisible(false)}
                             anchor={
                                 <TextInput
+                                    activeOutlineColor="#1c85fc"
                                     mode="outlined"
                                     value={roles.find(r => r.field === newUser.role)?.label || ""}
                                     style={LoginStyle.input}
@@ -198,6 +195,7 @@ const CreateUser = () => {
                     {info.map((i, idx) => {
                         return (
                             <TextInput
+                                activeOutlineColor="#1c85fc"
                                 key={i.field}
                                 ref={(el) => (inputRefs.current[i.field] = el)}
                                 mode="outlined"

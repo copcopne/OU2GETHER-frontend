@@ -3,7 +3,6 @@ import { Keyboard, TouchableOpacity, View } from "react-native";
 import { Button, Dialog, Portal, Text, TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginStyle from "../../styles/LoginStyle";
-import { useNavigation } from "@react-navigation/native";
 import Apis, { authApis, endpoints } from "../../configs/Apis";
 import qs from "qs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,7 +11,6 @@ import { DispatchContext } from "../../configs/Contexts";
 const ChangePassword = ({ route }) => {
     const { userdata, forceChangePassword = false } = route.params || {};
     const dispatch = useContext(DispatchContext);
-    const nav = useNavigation();
     const info = [{
         label: 'Mật khẩu cũ',
         field: 'oldPassword',
@@ -127,6 +125,7 @@ const ChangePassword = ({ route }) => {
 
                     return (
                         <TextInput
+                        activeOutlineColor="#1c85fc"
                             key={i.field}
                             ref={(el) => (inputRefs.current[i.field] = el)}
                             mode="outlined"
@@ -162,18 +161,18 @@ const ChangePassword = ({ route }) => {
                 })}
 
                 <Portal>
-                    <Dialog visible={visible} onDismiss={hideDialog}>
+                    <Dialog visible={visible} onDismiss={hideDialog} style={{ backgroundColor: "white" }}>
                         <Dialog.Title>Thông báo</Dialog.Title>
                         <Dialog.Content>
                             <Text variant="bodyMedium">{msg}</Text>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => {
+                            <TouchableOpacity onPress={() => {
                                 hideDialog();
                                 postAction();
                             }}>
-                                OK
-                            </Button>
+                                <Text style={{ color: '#1976D2', marginRight: 20  }}>OK</Text>
+                            </TouchableOpacity>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
@@ -182,16 +181,12 @@ const ChangePassword = ({ route }) => {
                     onPress={updatePassword}
                     disabled={loading}
                     loading={loading}
+                    buttonColor="#1c85fc"
                     mode="contained"
                 >
                     Cập nhật mật khẩu
                 </Button>
 
-                <TouchableOpacity
-                    style={LoginStyle.backButton}
-                    onPress={nav.goBack}>
-                    <Text style={LoginStyle.buttonText}>Quay lại</Text>
-                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );

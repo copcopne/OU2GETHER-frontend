@@ -71,22 +71,10 @@ const Login = () => {
           client_id: Constants.expoConfig.extra.client_id
         });
         let res = await Apis.post(endpoints['login'], payload);
-        await AsyncStorage.setItem('token', res.data.access_token);
-        await AsyncStorage.setItem('refresh', res.data.refresh_token);
 
         let u = await authApis(res.data.access_token).get(endpoints['currentUser']);
         let userdata = u.data;
 
-        if (userdata['is_active'] === false) {
-          setMsg("Tài khoản của bạn đã bị khóa, vui lòng liên hệ quản trị viên để biết thêm chi tiết.");
-          showDialog();
-          return;
-        }
-        if (userdata['is_locked'] === true) {
-          setMsg("Tài khoản của bạn đã bị khóa do không đổi mật khẩu trong thời gian quy định.");
-          showDialog();
-          return;
-        }
         if (userdata['is_verified'] === false) {
           setMsg("Vui lòng chờ quản trị viên xác thực tài khoản của bạn!");
           showDialog();
@@ -96,6 +84,9 @@ const Login = () => {
           nav.navigate('changePassword', { userdata, forceChangePassword: true });
           return;
         }
+        await AsyncStorage.setItem('token', res.data.access_token);
+        await AsyncStorage.setItem('refresh', res.data.refresh_token);
+
         dispatch({
           'type': 'login',
           'payload': userdata
@@ -104,6 +95,9 @@ const Login = () => {
       } catch (ex) {
         if (ex.response?.status === 400) {
           setMsg("Tài khoản hoặc mật khẩu không đúng!");
+          showDialog();
+        } else if (ex.response?.status === 403) {
+          setMsg("Tài khoản đã bị khóa! Vui lòng liên hệ admin để được mở khóa.");
           showDialog();
         } else {
           setMsg("Có lỗi xảy ra, vui lòng thử lại sau!");
@@ -138,6 +132,7 @@ const Login = () => {
 
         return (
           <TextInput
+            activeOutlineColor="#1c85fc"
             key={i.field}
             ref={(el) => (inputRefs.current[i.field] = el)}
             mode="outlined"
@@ -174,14 +169,17 @@ const Login = () => {
         );
       })}
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
+        <Dialog visible={visible} onDismiss={hideDialog} style={{ backgroundColor: "white" }}>
           <Dialog.Title>Lỗi</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">{msg}</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={hideDialog}>OK</Button>
+            <TouchableOpacity onPress={hideDialog}>
+            <Text style={{ color: '#1976D2' }}>OK</Text>
+          </TouchableOpacity>
           </Dialog.Actions>
+          
         </Dialog>
       </Portal>
 
@@ -190,16 +188,21 @@ const Login = () => {
         disabled={loading}
         loading={loading}
         mode="contained"
+        buttonColor="#1c85fc"
       >
         Đăng nhập
       </Button>
 
-      <TouchableOpacity
-        style={LoginStyle.backButton}
+      <Button
+      style={{marginTop: 15}}
         onPress={() => nav.goBack()}
+        mode="contained"
+        buttonColor="#e7f3ff"
+        textColor="black"
       >
-        <Text style={LoginStyle.buttonText}>Quay lại</Text>
-      </TouchableOpacity>
+      Quay lại
+      </Button>
+
     </KeyboardAvoidingView>
   );
 };

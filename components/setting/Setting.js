@@ -1,9 +1,9 @@
-import { TouchableOpacity, View } from "react-native";
-import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
-import SettingStyle from "../../styles/SettingStyle";
+import { FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Dialog, Icon, Portal, Text } from "react-native-paper";
 import { useContext, useState } from "react";
 import { DispatchContext, UserContext } from "../../configs/Contexts";
 import { useNavigation } from "@react-navigation/native";
+import SettingStyle from "../../styles/SettingStyle";
 
 const Setting = () => {
     const dispatch = useContext(DispatchContext);
@@ -13,93 +13,75 @@ const Setting = () => {
 
     const showDialog = () => setVisible(true);
     const hideDialog = () => setVisible(false);
-    return (
-        <View>
-            {currentUser.role === 0 ?
-                <>
-                    <TouchableOpacity
-                        onPress={() => nav.navigate("createUser")}
-                        style={SettingStyle.button}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                            <Icon size={32} source="account-plus" />
-                            <Text style={SettingStyle.buttonText}>Tạo người dùng mới</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => nav.navigate("unlockAccount")}
-                        style={SettingStyle.button}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                            <Icon size={32} source="account-alert" />
-                            <Text style={SettingStyle.buttonText}>Gia hạn đổi mật khẩu</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => nav.navigate("verifyUser")}
-                        style={SettingStyle.button}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                            <Icon size={32} source="account-arrow-up" />
-                            <Text style={SettingStyle.buttonText}>Xác nhận người dùng</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => nav.navigate("invite")}
-                        style={SettingStyle.button}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                            <Icon size={32} source="email-edit" />
-                            <Text style={SettingStyle.buttonText}>Tạo thư mời</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => nav.navigate("stats")}
-                        style={SettingStyle.button}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                            <Icon size={32} source="chart-arc" />
-                            <Text style={SettingStyle.buttonText}>Thống kê hệ thống</Text>
-                        </View>
-                    </TouchableOpacity>
-                </> : null
+
+    const menuItems = [
+        { title: 'Tạo người dùng', icon: 'account-plus', screen: 'createUser', adminOnly: true },
+        { title: 'Gia hạn đổi mật khẩu', icon: 'account-alert', screen: 'unlockAccount', adminOnly: true },
+        { title: 'Xác nhận người dùng', icon: 'account-arrow-up', screen: 'verifyUser', adminOnly: true },
+        { title: 'Tạo thư mời', icon: 'email-edit', screen: 'invite', adminOnly: true },
+        { title: 'Thống kê hệ thống', icon: 'chart-arc', screen: 'stats', adminOnly: true },
+        { title: 'Đổi mật khẩu', icon: 'form-textbox-password', screen: 'changePassword' },
+        { title: 'Đăng xuất', icon: 'logout', isLogout: true },
+    ];
+
+    const renderItem = ({ item }) => {
+        if (item.adminOnly && currentUser.role !== 0) return null;
+
+        const onPress = () => {
+            if (item.isLogout) {
+                showDialog();
+            } else if (item.screen === 'changePassword') {
+                nav.navigate(item.screen, { userdata: currentUser });
+            } else {
+                nav.navigate(item.screen);
             }
+        };
+
+        return (
             <TouchableOpacity
-                style={SettingStyle.button}
-                onPress={() => nav.navigate("changePassword", { userdata: currentUser })}
+                style={SettingStyle.tile}
+                onPress={onPress}
             >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                    <Icon size={32} source="form-textbox-password" />
-                    <Text style={SettingStyle.buttonText}>Đổi mật khẩu</Text>
-                </View>
+                <Icon size={32} source={item.icon} color="#3b5998" />
+                <Text style={SettingStyle.tileText}>{item.title}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-                style={SettingStyle.button}
-                onPress={showDialog}
-            >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                    <Icon size={32} source="logout" />
-                    <Text style={SettingStyle.buttonText}>Đăng xuất</Text>
-                </View>
-            </TouchableOpacity>
+        );
+    };
+
+    return (
+        <View style={SettingStyle.container}>
+            <FlatList
+                data={menuItems}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={2}
+                contentContainerStyle={SettingStyle.grid}
+            />
 
             <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
+                <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor:"white"}}>
                     <Dialog.Title>Thông báo</Dialog.Title>
                     <Dialog.Content>
                         <Text variant="bodyMedium">Bạn có muốn đăng xuất không?</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button onPress={() => {
-                            hideDialog(); dispatch({
-                                type: "logout"
-                            })
-                        }}>OK</Button>
-                        <Button onPress={hideDialog}>Hủy</Button>
+                        <TouchableOpacity onPress={() => {
+                            hideDialog();
+                            dispatch({ type: "logout" });
+                        }}>
+                            <Text style={{ color: '#1976D2', marginRight: 20 }}>OK</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={hideDialog}>
+                            <Text style={{ color: '#1976D2' }}>Hủy</Text>
+                        </TouchableOpacity>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
         </View>
-    )
+    );
 };
+
+const styles = StyleSheet.create({
+});
+
 export default Setting;

@@ -68,6 +68,7 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
     };
 
     const handleAddDate = (date) => {
+        setShowDatePicker(false);
         const now = new Date();
         if (now.getTime() > date.getTime()) {
             setSnackbar({
@@ -75,12 +76,10 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
                 message: 'Vui lòng chọn thời gian hợp lệ!',
                 type: "error",
             });
-            setEndTime(null);
             return;
         }
         
         setEndTime(date);
-        setShowDatePicker(false);
     }
 
     const validate = () => {

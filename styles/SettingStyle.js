@@ -1,19 +1,34 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+
+const numColumns = 2;
+const tileSize = Dimensions.get("window").width / numColumns - 24;
+
 
 export default StyleSheet.create({
-    button: {
-        backgroundColor: "#fff",
-        paddingVertical: 7,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        marginVertical: 8,
-        marginHorizontal: 10
+    container: {
+        flex: 1,
+        backgroundColor: '#fff'
     },
-    buttonText: {
-        color: "#000",
-        fontSize: 23,
-        fontWeight: "600",
-        marginLeft: 10
-    }
+    grid: {
+        margin: 0,
+        padding: 5,
+        paddingBottom: 100
+    },
+    tile: {
+        backgroundColor: '#f2f2f2',
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        alignItems: 'baseline',
+        justifyContent: 'flex-start',
+        margin: 8,
+        width: tileSize,
+        elevation: 2,
+    },
+    tileText: {
+        marginTop: 8,
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: '500'
+    },
 });

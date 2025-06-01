@@ -129,12 +129,13 @@ const EditProfile = ({ profileData, modalRef }) => {
             <View style={{ margin: 32 }}>
                 {info.map((i) =>
                     <TextInput
+                        activeOutlineColor="#1c85fc"
                         key={i.field}
                         mode="outlined"
                         {...(i.field === "bio" ? { multiline: true, numberOfLines: 4 } : {})}
                         value={data[i.field] || ""}
                         onChangeText={(t) => setState(t, i.field)}
-                        style={[LoginStyle.input, i.field === "bio" ? { textAlignVertical: 'top' } : {}]}
+                        style={[LoginStyle.input, i.field === "bio" && { textAlignVertical: 'top', minHeight: 100 }]}
                         label={i.label}
                         secureTextEntry={false}
                     />

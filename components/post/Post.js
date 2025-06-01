@@ -203,7 +203,7 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     }
 
     const handleShowResults = () => {
-        
+
 
     }
 
@@ -447,14 +447,18 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
             </View>
 
             <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
+                <Dialog visible={visible} onDismiss={hideDialog} style={{ backgroundColor: "white" }}>
                     <Dialog.Title>Thông báo</Dialog.Title>
                     <Dialog.Content>
                         <Text variant="bodyMedium">{msg}</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button onPress={handleDeletePost}>OK</Button>
-                        <Button onPress={hideDialog}>Hủy</Button>
+                        <TouchableOpacity onPress={handleDeletePost}>
+                            <Text style={{ color: '#1976D2', marginRight: 20  }}>OK</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={hideDialog}>
+                            <Text style={{ color: '#1976D2' }}>Hủy</Text>
+                        </TouchableOpacity>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
