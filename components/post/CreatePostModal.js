@@ -206,7 +206,7 @@ const CreatePostModal = () => {
                                         selected={isCommentSelected}
                                         onPress={() => setIsCommentSelected(!isCommentSelected)}
                                     >
-                                        {isCommentSelected ? "Bật" : "Tắt"} bình luận
+                                        Bình luận
                                     </Chip>
                                     {isAdmin && <Chip
                                         style={[

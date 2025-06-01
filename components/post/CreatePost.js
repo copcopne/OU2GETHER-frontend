@@ -66,7 +66,7 @@ const CreatePost = ({ route }) => {
             setEndTime(null);
             return;
         }
-        
+
         setEndTime(date);
     }
 
@@ -172,18 +172,18 @@ const CreatePost = ({ route }) => {
                             selected={isCommentSelected}
                             onPress={() => setIsCommentSelected(!isCommentSelected)}
                         >
-                            {isCommentSelected ? "Bật" : "Tắt"} bình luận
+                            Bình luận
                         </Chip>
                         {isAdmin && <Chip
-                                                                style={[
-                                                                    CreatePostStyle.chip,
-                                                                    isPollSelected && CreatePostStyle.chipActive,
-                                                                ]}
-                                                                selected={isPollSelected}
-                                                                onPress={() => setIsPollSelected(!isPollSelected)}
-                                                            >
-                                                                Khảo sát
-                                                            </Chip>}
+                            style={[
+                                CreatePostStyle.chip,
+                                isPollSelected && CreatePostStyle.chipActive,
+                            ]}
+                            selected={isPollSelected}
+                            onPress={() => setIsPollSelected(!isPollSelected)}
+                        >
+                            Khảo sát
+                        </Chip>}
                     </View>
                 </View>
             </View>

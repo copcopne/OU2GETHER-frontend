@@ -70,7 +70,6 @@ const Home = () => {
   };
 
   const fetchPosts = async () => {
-    let res;
     try {
       setLoading(true);
 
@@ -86,7 +85,7 @@ const Home = () => {
 
       const url = `${baseUrl}?${params.join("&")}`;
       const token = await AsyncStorage.getItem("token");
-      res = await authApis(token).get(url);
+      const res = await authApis(token).get(url);
 
       const results = res.data.results || [];
 
@@ -105,6 +104,12 @@ const Home = () => {
           setFollowingPost((prev) => [...prev, ...unique]);
         }
       }
+      
+      if (res.data.next === null) {
+        if (selectedTab === "all") setPage(0);
+        else setPageFollowing(0);
+      }
+      
     } catch (error) {
       console.error(error);
       setSnackbar({
@@ -119,11 +124,6 @@ const Home = () => {
       }
     } finally {
       setLoading(false);
-
-      if (res?.data?.next === null) {
-        if (selectedTab === "all") setPage(0);
-        else setPageFollowing(0);
-      }
     }
   };
 
@@ -141,9 +141,10 @@ const Home = () => {
 
   useEffect(() => {
     if (selectedTab === "all") {
-      fetchPolls();
+      if(pollHasNext) 
+        fetchPolls();
     }
-  }, [selectedTab, pollPage]);
+  }, [selectedTab, pollHasNext]);
 
   const fetchMore = () => {
     if (loading || refreshing) return;
@@ -165,11 +166,10 @@ const Home = () => {
         setPolls([]);
         setPollPage(1);
         setPollHasNext(true);
+        await fetchPolls();
 
         setPosts([]);
         setPage(1);
-
-        await fetchPolls();
         await fetchPosts();
       } else {
         setFollowingPost([]);
@@ -299,7 +299,7 @@ const Home = () => {
           </View>
         )}
 
-        <Text
+        {selectedTab === "all" && <Text
           style={{
             fontSize: 18,
             fontWeight: "bold",
@@ -307,8 +307,8 @@ const Home = () => {
             marginBottom: 8,
           }}
         >
-          {selectedTab === "all" && "📰 Tất cả bài viết"}
-        </Text>
+          📰 Tất cả bài viết
+        </Text>}
       </View>
     );
   };

@@ -169,7 +169,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
     }
 
     return (
-        <TouchableOpacity style={[PostStyle.r, PostStyle.p, { alignItems: "flex-start" }, (editing || loading || showOptions) && { backgroundColor: "#eeeeee"}, editing && {paddingVertical: 12}]}
+        <TouchableOpacity style={[PostStyle.r, CommentStyle.commentContainer, { alignItems: "flex-start" }, editing && {paddingVertical: 12}]}
             ref={optionsRef}
             onLongPress={() => (!editing && canOpenOptions) ? setShowOptions(true) : null}
         >
@@ -243,7 +243,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                 onRequestClose={() => setShowOptions(false)}
                 placement="top"
                 arrowSize={{width: 20, height: 10}}
-                popoverStyle={{backgroundColor:"#eeeeee"}}
+                popoverStyle={{backgroundColor:"#b9b9b9"}}
                 backgroundStyle={{backgroundColor:"transparent"}}
             >
                 <View style={CommentStyle.optionsBox}>

@@ -13,6 +13,7 @@ import { authApis, endpoints } from "../../configs/Apis";
 import LoginStyle from "../../styles/LoginStyle";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import UpdatePost from "./UpdatePost";
+import PollResult from "./PollResults";
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -39,6 +40,10 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const handlePresentModalPress = useCallback(() => {
         bottomSheetModalRef.current?.present();
     }, []);
+    const pollResultModalRef = useRef(null);
+    const handlePresentPollModalPress = useCallback(() => {
+        pollResultModalRef.current?.present();
+    }, []);
     const likeButtonRef = useRef();
     const [showReactions, setShowReactions] = useState(false);
     const { setSnackbar } = useContext(SnackbarContext);
@@ -60,8 +65,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const showDialog = () => setVisible(true);
     const hideDialog = () => setVisible(false);
     const [msg, setMsg] = useState('');
-
-    const [showResuls, setShowResults] = useState(false);
 
     useEffect(() => {
         setPostData(initialPostData);
@@ -307,9 +310,9 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 placement="auto"
                 arrowSize={{ width: 20, height: 10 }}
                 backgroundStyle={{ backgroundColor: 'transparent' }}
-                popoverStyle={{ borderRadius: 15, backgroundColor: "#eeeeee" }}
+                popoverStyle={{ borderRadius: 15, backgroundColor: "#b9b9b9" }}
             >
-                <View style={{ backgroundColor: "#eeeeee", width: "100%", alignItems: "center" }}>
+                <View style={{ backgroundColor: "#b9b9b9", width: "100%", alignItems: "center" }}>
                     {isMySelf ? <><TouchableOpacity
                         style={{ padding: 20, width: '100%', alignItems: 'center' }}
                         onPress={() => {
@@ -378,7 +381,7 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                             <Button
                                 style={{ margin: 10 }}
                                 mode="contained"
-                                onPress={handleShowResults}
+                                onPress={handlePresentPollModalPress}
                             >
                                 Xem kết quả
                             </Button>
@@ -472,6 +475,19 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                         postData={postData}
                         modalRef={bottomSheetModalRef}
                         onUpdateSuccess={onUpdateSuccess}
+                    />
+                </BottomSheetView>
+            </BottomSheetModal>
+            <BottomSheetModal
+                ref={pollResultModalRef}
+                snapPoints={["85%"]}
+                enablePanDownToClose={true}
+
+            >
+                <BottomSheetView style={{ flex: 1 }}>
+                    <PollResult
+                        pollData={pollData}
+                        modalRef={pollResultModalRef}
                     />
                 </BottomSheetView>
             </BottomSheetModal>

@@ -34,7 +34,7 @@ const LoginStyle = StyleSheet.create({
   buttonText: {
     color: "black",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
   p: {
     padding: 24,

@@ -176,7 +176,16 @@ const PostDetail = ({ route }) => {
     }, [page]);
 
     const renderHeader = () => {
-        return <Post initialPostData={postData} commentInputRef={commentInputRef} onUpdateSuccess={onUpdateSuccess} onDeleteSuccess={handleDeletePost} />
+        return (<><Post 
+            initialPostData={postData} 
+            commentInputRef={commentInputRef} 
+            onUpdateSuccess={onUpdateSuccess} 
+            onDeleteSuccess={handleDeletePost} 
+        />
+        <View style={{backgroundColor:"#f2f2f2", width:"100%"}} >
+            <Text variant="titleLarge" style={{marginLeft: "10", paddingVertical: 10, fontWeight:"bold"}}>Bình luận</Text>
+        </View>
+        </>);
     }
     
     return (
@@ -189,9 +198,8 @@ const PostDetail = ({ route }) => {
                 enableOnAndroid
                 extraScrollHeight={120}
                 keyboardOpeningTime={0}
-                style={PostStyle.container}
                 data={comment}
-                ListHeaderComponent={renderHeader()}
+                ListHeaderComponent={renderHeader}
                 ListFooterComponent={loading ? <ActivityIndicator /> : null}
                 ListEmptyComponent={
                     <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>

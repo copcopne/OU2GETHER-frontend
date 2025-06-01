@@ -22,8 +22,14 @@ export default StyleSheet.create({
         alignItems: "center"
     },
     option: {
+        backgroundColor: "#b9b9b9",
         padding: 20, 
         width: '100%', 
         alignItems: 'center'
+    },
+    commentContainer: {
+        padding: 8,
+        borderColor: "#f2f2f2", 
+        borderBottomWidth: 5
     }
 });

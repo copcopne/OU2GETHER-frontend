@@ -249,13 +249,14 @@ const UpdatePost = ({ postData, modalRef, onUpdateSuccess }) => {
                                 selected={isCommentSelected}
                                 onPress={() => setIsCommentSelected(!isCommentSelected)}
                             >
-                                {isCommentSelected ? "Bật" : "Tắt"} bình luận
+                                Bình luận
                             </Chip>
                             {isPoll &&
                                 <Chip
                                     style={[CreatePostStyle.chip, CreatePostStyle.chipActive,]}
                                     selected={isPoll}
                                     onPress={() => { }}
+                                    disabled={true}
                                 >
                                     Khảo sát
                                 </Chip>

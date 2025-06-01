@@ -24,31 +24,31 @@ const Search = () => {
         if (page > 0 && searchQuery) {
             try {
                 setLoading(true);
-                let url = `${endpoints['users']}?page=${page}`;
 
-                if (searchQuery) {
-                    url = `${url}&kw=${searchQuery}`;
-                }
+                let url = `${endpoints['users']}?page=${page}&kw=${searchQuery}`;
                 const token = await AsyncStorage.getItem("token");
                 const res = await authApis(token).get(url);
 
+
                 if (page === 1)
                     setUsers(res.data.results);
-                else setUsers([...users, res.data.results]);
+                else setUsers([...users, ...res.data.results]);
 
-                if (res.data.next === 'null')
+                if (res.data.next === null)
                     setPage(0);
             } catch (error) {
-                console.error(error);
+                console.error('Fetch users error:', error);
             } finally {
                 setLoading(false);
             }
         }
     };
+
     const fetchMore = () => {
         if (!loading && !refreshing && page > 0 && users.length > 0)
             setPage(page + 1);
     }
+
     const handleRefresh = async () => {
         try {
             setRefreshing(true);
@@ -57,11 +57,12 @@ const Search = () => {
                 await fetchUsers();
             else setPage(1);
         } catch (error) {
-
+            console.error(error);
         } finally {
             setRefreshing(false);
         }
     }
+
     useEffect(() => {
         let timer = setTimeout(() => {
             if (page > 0) {
@@ -69,7 +70,6 @@ const Search = () => {
             }
         }, 500);
         return () => clearTimeout(timer);
-
     }, [page, searchQuery]);
 
     useEffect(() => {
@@ -77,20 +77,28 @@ const Search = () => {
             setPage(1);
             setUsers([]);
         }, 400);
+        return () => clearTimeout(timer);
     }, [searchQuery])
 
-
     const renderUserItem = ({ item }) => {
-
         return (
-            <View style={{ position: "relative", padding: 3, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ padding: 6, flexDirection: "row", justifyContent: "flex-start", backgroundColor: "white", borderRadius: 16, width: "100%" }}>
-                    <Image style={{ height: 70, width: "70", borderRadius: 35 }} source={{ uri: item.avatar }} />
-                    <View style={{ marginHorizontal: 10, width: "80%" }}>
-                        <Text style={SearchStyle.name}>{item.last_name} {item.first_name}</Text>
-                        {item.number_of_followers > 0 && <Text>Có {item.number_of_followers} người theo dõi</Text>}
+            <View style={SearchStyle.userContainter}>
+                <View style={SearchStyle.card}>
+                    <Image
+                        style={{ height: 80, width: 80, borderRadius: 40 }}
+                        source={{ uri: item.avatar }}
+                    />
+                    <View style={{ marginHorizontal: 15, width: "75%" }}>
+                        <Text style={[SearchStyle.name, { fontSize: 18, marginBottom: 5 }]}>
+                            {item.last_name} {item.first_name}
+                        </Text>
+                        {item.number_of_followers > 0 &&
+                            <Text style={{ marginBottom: 10, color: '#666' }}>
+                                Có {item.number_of_followers} người theo dõi
+                            </Text>
+                        }
                         <TouchableOpacity
-                            style={SearchStyle.button}
+                            style={[SearchStyle.button, { paddingVertical: 10 }]}
                             onPress={() => {
                                 if (item.id === currentUser.id) {
                                     nav.navigate('profile');
@@ -108,44 +116,60 @@ const Search = () => {
         );
     };
 
-    return (<>
-        <Searchbar
-            placeholder="Tìm kiếm..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={{
-                marginTop: 40,
-                marginHorizontal: 10,
-                backgroundColor: 'white',
-            }}
-            iconColor="#888"
-            placeholderTextColor="#aaa"
-        />
-        <View
-            style={[
-                { width: "100%", height: "100%", marginTop: 10 },
-                users.length !== 0 && { backgroundColor: "white" }
-            ]}
-        >
-            {users.length !== 0 && <Text style={{ fontSize: 22, marginLeft: 10, fontWeight: "700", marginTop: 5 }}>Người dùng</Text>}
-            <FlatList
-                style={{ padding: 0 }}
-                ListFooterComponent={loading && <ActivityIndicator style={{ padding: 10 }} />}
-                ListEmptyComponent={() =>
-                    <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
-                        <Text style={LoginStyle.subTitle}>{(searchQuery) ? "Không có người dùng nào" : "Vui lòng nhập từ khóa để tìm kiếm"}</Text>
-                    </View>
-                }
-                data={users}
-                onEndReached={fetchMore}
-                contentContainerStyle={{ marginBottom: tabBarHeight + 16 }}
-                onEndReachedThreshold={0.7}
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                keyExtractor={item => `${item.id}`}
-                renderItem={renderUserItem}
+    return (
+        <View style={{
+            flex: 1,
+            paddingBottom: tabBarHeight
+        }}>
+            <Searchbar
+                placeholder="Tìm kiếm..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={{
+                    marginTop: 40,
+                    marginHorizontal: 10,
+                    backgroundColor: 'white',
+                }}
+                iconColor="#888"
+                placeholderTextColor="#aaa"
             />
+            <View style={[
+                {
+                    marginTop: 10,
+                    flex: 1
+                },
+                users.length !== 0 && { backgroundColor: "white" }
+            ]}>
+                {users.length !== 0 &&
+                    <Text style={SearchStyle.label}>
+                        Người dùng
+                    </Text>
+                }
+                <FlatList
+                    style={{ padding: 0 }}
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        paddingBottom: 20
+                    }}
+                    ListFooterComponent={loading && <ActivityIndicator style={{ padding: 20 }} />}
+                    ListEmptyComponent={() =>
+                        <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
+                            <Text style={LoginStyle.subTitle}>
+                                {(searchQuery) ? "Không có người dùng nào" : "Vui lòng nhập từ khóa để tìm kiếm"}
+                            </Text>
+                        </View>
+                    }
+                    data={users}
+                    onEndReached={fetchMore}
+                    onEndReachedThreshold={0.7}
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                    keyExtractor={item => `${item.id}`}
+                    renderItem={renderUserItem}
+                />
+            </View>
         </View>
-    </>);
+    );
 };
+
 export default Search;
