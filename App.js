@@ -33,6 +33,7 @@ import Empty from './components/empty';
 import Search from './components/profile/Search';
 import AllChats from './components/chat/AllChats';
 import Constants from 'expo-constants';
+import CreateGroup from './components/setting/CreateGroup';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -133,6 +134,23 @@ const SearchStack = () => {
     </Stack.Navigator>
   );
 }
+const InivteStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="inviteStack"
+        component={Invite}
+        options={{
+          title: "Tạo thư mời"
+        }} />
+      <Stack.Screen
+        name="createGroup"
+        component={CreateGroup}
+        options={{
+          title: "Tạo nhóm mới"
+        }} />
+    </Stack.Navigator>)
+}
 const SettingStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }}>
@@ -156,9 +174,10 @@ const SettingStack = () => {
         }} />
       <Stack.Screen
         name="invite"
-        component={Invite}
+        component={InivteStack}
         options={{
-          title: "Tạo thư mời"
+          title: "Tạo thư mời",
+          headerShown: false
         }} />
       <Stack.Screen
         name="verifyUser"

@@ -4,7 +4,7 @@ import { Button, Text } from "react-native-paper";
 const PollResult = ({ pollData, modalRef }) => {
   const { question, options } = pollData;
 
-  const totalVotes = options.reduce((sum, opt) => sum + opt.votes_count, 0);
+  const totalVotes = options.reduce((sum, opt) => sum + opt.vote_count, 0);
 
   return (
     <>
@@ -26,7 +26,7 @@ const PollResult = ({ pollData, modalRef }) => {
         {options.map((opt) => {
           const percent =
             totalVotes > 0
-              ? Math.round((opt.votes_count / totalVotes) * 100)
+              ? Math.round((opt.vote_count / totalVotes) * 100)
               : 0;
 
           return (
@@ -34,7 +34,7 @@ const PollResult = ({ pollData, modalRef }) => {
               <View style={styles.optionTextWrapper}>
                 <Text style={styles.optionText}>{opt.content}</Text>
                 <Text style={styles.voteCountText}>
-                  {opt.votes_count}{" "}
+                  {opt.vote_count}{" "}
                   {totalVotes > 0 ? `(${percent}%)` : ""}
                 </Text>
               </View>

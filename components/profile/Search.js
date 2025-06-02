@@ -65,7 +65,7 @@ const Search = () => {
 
     useEffect(() => {
         let timer = setTimeout(() => {
-            if (page > 0) {
+            if (page !== 0) {
                 fetchUsers();
             }
         }, 500);
@@ -74,8 +74,8 @@ const Search = () => {
 
     useEffect(() => {
         let timer = setTimeout(() => {
-            setPage(1);
             setUsers([]);
+            setPage(1);
         }, 400);
         return () => clearTimeout(timer);
     }, [searchQuery])

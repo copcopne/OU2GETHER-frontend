@@ -7,6 +7,7 @@ import Apis, { authApis, endpoints } from "../../configs/Apis";
 import qs from "qs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DispatchContext } from "../../configs/Contexts";
+import Constants from 'expo-constants';
 
 const ChangePassword = ({ route }) => {
     const { userdata, forceChangePassword = false } = route.params || {};
@@ -76,19 +77,24 @@ const ChangePassword = ({ route }) => {
         } else
             try {
                 setLoading(true);
-                let token = '';
+                let token;
+                let authData;
                 if (!forceChangePassword) {
                     const payload = qs.stringify({
                         grant_type: 'password',
                         username: userdata.username,
                         password: passwordData.oldPassword,
-                        client_id: 'FFtLr1EegBDRWsI7unpeQtEbIuMPgrfWM69ED7Qe',
+                        client_id: Constants.expoConfig.extra.client_id
                     });
-                    token = (await Apis.post(endpoints['login'], payload)).data.access_token;
+                    authData = (await Apis.post(endpoints['login'], payload)).data;
+                    token = authData.access_token;
                 } else token = await AsyncStorage.getItem("token");
 
                 let res = await authApis(token).patch(endpoints['currentUser'], passwordData);
-                setMsg(`Thay đổi mật khẩu thành công! ${forceChangePassword ? "" : "\nVui lòng đăng nhập lại để có hiệu lực"}`);
+                await AsyncStorage.setItem("token", token);
+                if (authData) await AsyncStorage.setItem("refesh", authData.refresh_token);
+
+                setMsg(`Thay đổi mật khẩu thành công! ${!forceChangePassword && "\nVui lòng đăng nhập lại để có hiệu lực"}`);
                 setPostAction(() => () => {
                     if (forceChangePassword) {
                         dispatch({
@@ -125,7 +131,7 @@ const ChangePassword = ({ route }) => {
 
                     return (
                         <TextInput
-                        activeOutlineColor="#1c85fc"
+                            activeOutlineColor="#1c85fc"
                             key={i.field}
                             ref={(el) => (inputRefs.current[i.field] = el)}
                             mode="outlined"
@@ -171,7 +177,7 @@ const ChangePassword = ({ route }) => {
                                 hideDialog();
                                 postAction();
                             }}>
-                                <Text style={{ color: '#1976D2', marginRight: 20  }}>OK</Text>
+                                <Text style={{ color: '#1976D2', marginRight: 20 }}>OK</Text>
                             </TouchableOpacity>
                         </Dialog.Actions>
                     </Dialog>

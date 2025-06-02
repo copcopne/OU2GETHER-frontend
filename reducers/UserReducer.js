@@ -5,7 +5,7 @@ export default (current, action) => {
         case 'login': case 'update':
             return action.payload;
         case 'logout':
-            AsyncStorage.removeItem('token');
+            AsyncStorage.multiRemove(['token', 'refresh']);
             return null;
     }
     return current;

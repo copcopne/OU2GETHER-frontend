@@ -363,7 +363,7 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                                 Gửi câu trả lời
                             </Button>
                         )}
-                        {(pollData.is_ended && isAdmin) && (
+                        {(pollData.is_ended && currentUser.role !== 2) && (
                             <Button
                                 style={{ margin: 10 }}
                                 mode="contained"
