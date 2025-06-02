@@ -18,10 +18,9 @@ import PollResult from "./PollResults";
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
-const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) => {
+const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) => {
 
-    const [postData, setPostData] = useState(initialPostData);
-    const [pollData, setPollData] = useState(initialPostData.post_type === 'poll' ? initialPostData.poll : null);
+    const [pollData, setPollData] = useState(postData.post_type === 'poll' ? postData.poll : null);
     const [options, setOptions] = useState([]);
     const [oldOptions, setOldOptions] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
@@ -67,15 +66,40 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
     const [msg, setMsg] = useState('');
 
     useEffect(() => {
-        setPostData(initialPostData);
-    }, [initialPostData]);
+        setPollData(postData.post_type === 'poll' ? postData.poll : null);
+        const options = postData.post_type === 'poll' ? postData.poll?.options : null;
+        setOptions(options);
+
+        if (options) {
+            const voted = options
+                .filter(option => option.is_voted === true)
+                .map(option => option.id);
+            setOldOptions(voted);
+            setSelectedOptions(voted);
+        }
+    }, [postData]);
+
+    useEffect(() => {
+        const setOld = new Set(oldOptions);
+        const setNew = new Set(selectedOptions);
+        if ((oldOptions.length !== selectedOptions.length) || (setOld.size !== setNew.size)) {
+            setIsDiff(true);
+            return;
+        }
+        for (let item of setOld)
+            if (!setNew.has(item)) {
+                setIsDiff(true);
+                return;
+            }
+
+        setIsDiff(false);
+    }, [selectedOptions]);
 
     const sendReaction = async (type) => {
         try {
             const token = await AsyncStorage.getItem("token");
             const url = endpoints['interactPost'](postData.id, type);
             const res = await authApis(token).post(url);
-            setPostData(res.data);
 
             if (onUpdateSuccess)
                 onUpdateSuccess(res.data);
@@ -98,37 +122,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
         };
     };
     const reactionDisplay = getReactionDisplay();
-
-    useEffect(() => {
-        setPollData(postData.post_type === 'poll' ? postData.poll : null);
-        const options = postData.post_type === 'poll' ? postData.poll?.options : null;
-        setOptions(options);
-
-        if (options) {
-            const voted = options
-                .filter(option => option.is_voted === true)
-                .map(option => option.id);
-            setOldOptions(voted);
-            setSelectedOptions(voted);
-        }
-
-    }, [postData]);
-
-    useEffect(() => {
-        const setOld = new Set(oldOptions);
-        const setNew = new Set(selectedOptions);
-        if ((oldOptions.length !== selectedOptions.length) || (setOld.size !== setNew.size)) {
-            setIsDiff(true);
-            return;
-        }
-        for (let item of setOld)
-            if (!setNew.has(item)) {
-                setIsDiff(true);
-                return;
-            }
-
-        setIsDiff(false);
-    }, [selectedOptions]);
 
     const getChangedOptions = () => {
         const oldSet = new Set(oldOptions);
@@ -167,7 +160,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 const result = await authApis(token).post(endpoints['vote'](postData.id), {
                     option_ids: changedOptions
                 });
-                setPostData(result.data);
 
                 if (onUpdateSuccess)
                     onUpdateSuccess(result.data);
@@ -186,7 +178,7 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                     msg = "Lựa chọn bạn đã chọn không còn nữa!";
                     const token = await AsyncStorage.getItem("token");
                     const result = await authApis(token).get(endpoints['post'](postData.id));
-                    setPostData(result.data);
+                    
                     if (onUpdateSuccess)
                         onUpdateSuccess(result.data);
                 } else {
@@ -205,11 +197,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
 
     }
 
-    const handleShowResults = () => {
-
-
-    }
-
     const handleToggleComment = async () => {
         setShowOptions(false);
         try {
@@ -217,7 +204,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
             const res = await authApis(token).patch(endpoints['updatePost'](postData.id), {
                 can_comment: !postData.can_comment,
             });
-            setPostData(res.data);
             setSnackbar({
                 visible: true,
                 message: `${postData.can_comment ? "Khóa" : "Mở khóa"} bình luận thành công!`,
@@ -254,7 +240,8 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 type: "success",
             });
 
-            onDeleteSuccess(postData.id);
+            if(onDeleteSuccess)
+                onDeleteSuccess(postData.id);
         } catch (error) {
             let msg;
             if (error.response?.status === 403)
@@ -265,7 +252,6 @@ const Post = ({ initialPostData, commentInputRef, onDeleteSuccess, onUpdateSucce
                 msg = "Lỗi không xác định khi xóa bài viết này!";
                 console.error(error);
             }
-
             setSnackbar({
                 visible: true,
                 message: msg,

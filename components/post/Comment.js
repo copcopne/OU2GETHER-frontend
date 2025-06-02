@@ -7,7 +7,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import Popover from 'react-native-popover-view';
 import LoginStyle from '../../styles/LoginStyle';
 import { SnackbarContext, UserContext } from '../../configs/Contexts';
-import { Dialog, Portal, Button } from 'react-native-paper';
+import { Dialog, Portal } from 'react-native-paper';
 import CommentStyle from '../../styles/CommentStyle';
 const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
 
@@ -48,13 +48,13 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
             const token = await AsyncStorage.getItem("token");
             const url = endpoints['interactComment'](commentData.id, type);
             const res = await authApis(token).post(url);
-            
+
             const selected = reactions.find(r => r.type === type);
             if (currentReaction && currentReaction.type === type)
                 setCurrentReaction(null);
             else
                 setCurrentReaction(selected);
-            
+
             setCommentData(res.data);
         } catch (error) {
             console.error('not ok: ', error);
@@ -95,36 +95,40 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
             });
             return;
         }
-        try {
-            const token = await AsyncStorage.getItem("token");
-            const res = await authApis(token).patch(endpoints['updateComment'](commentData.id), {
-                content: editedComment,
-            });
-            setCommentData(res.data);
-            setEditing(false);
-            setSnackbar({
-                visible: true,
-                message: "Chỉnh sửa thành công!",
-                type: "success",
-            });
-        } catch (error) {
-            let msg;
-            if (error.response?.status === 403)
-                msg = "Bạn không có quyền chỉnh sửa bình luận này!";
-            else if (error.response?.status >= 500) {
-                msg = "Lỗi máy chủ khi thực hiện chỉnh sửa bình luận!";
-            } else {
-                msg = "Lỗi không xác định khi chỉnh sửa bình luận!";
-                console.error(error);
+        if (commentData.content !== editedComment)
+            try {
+                setLoading(true);
+                const token = await AsyncStorage.getItem("token");
+                const res = await authApis(token).patch(endpoints['updateComment'](commentData.id), {
+                    content: editedComment,
+                });
+                setCommentData(res.data);
+                setSnackbar({
+                    visible: true,
+                    message: "Chỉnh sửa thành công!",
+                    type: "success",
+                });
+            } catch (error) {
+                let msg;
+                if (error.response?.status === 403)
+                    msg = "Bạn không có quyền chỉnh sửa bình luận này!";
+                else if (error.response?.status >= 500) {
+                    msg = "Lỗi máy chủ khi thực hiện chỉnh sửa bình luận!";
+                } else {
+                    msg = "Lỗi không xác định khi chỉnh sửa bình luận!";
+                    console.error(error);
+                }
+
+                setSnackbar({
+                    visible: true,
+                    message: msg,
+                    type: "error",
+                });
+            } finally {
+                setLoading(false);
             }
 
-            setSnackbar({
-                visible: true,
-                message: msg,
-                type: "error",
-            });
-        } finally {
-        }
+        setEditing(false);
     };
 
     useEffect(() => {
@@ -169,7 +173,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
     }
 
     return (
-        <TouchableOpacity style={[PostStyle.r, CommentStyle.commentContainer, { alignItems: "flex-start" }, editing && {paddingVertical: 12}]}
+        <TouchableOpacity style={[PostStyle.r, CommentStyle.commentContainer, { alignItems: "flex-start" }, editing && { paddingVertical: 12 }, loading && { backgroundColor: "#b9b9b9" }]}
             ref={optionsRef}
             onLongPress={() => (!editing && canOpenOptions) ? setShowOptions(true) : null}
         >
@@ -186,7 +190,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                         <Text style={PostStyle.name}>{`${commentData?.author.last_name} ${commentData?.author.first_name}`}</Text>
                         {(!editing && commentData?.is_edited === true) && <Text style={PostStyle.date}>Chỉnh sửa {dayjs(commentData?.updated_at).fromNow()}</Text>}
                     </View>
-                    {!editing ? <Text style={[PostStyle.content, PostStyle.m_v]} >{commentData?.content}</Text> : <TextInput ref={editCommentRef} style={[PostStyle.content, { backgroundColor: "white", borderRadius: 16, padding: 10, marginVertical: 5 }]} multiline value={editedComment} onChangeText={setEditedComment} placeholder='Nhập bình luận...' />}
+                    {!editing ? <Text style={[PostStyle.content, PostStyle.m_v]} >{commentData?.content}</Text> : <TextInput ref={editCommentRef} style={[PostStyle.content, { backgroundColor: "#efefef", borderRadius: 16, padding: 10, marginVertical: 5 }]} multiline value={editedComment} onChangeText={setEditedComment} placeholder='Viết bình luận...' />}
                 </View>
                 <View style={[CommentStyle.rowDirection, { justifyContent: "space-between" }]}>
                     {!editing ? <View style={CommentStyle.rowDirection}>
@@ -205,8 +209,8 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                         : <View style={[CommentStyle.rowDirection, { flex: 1, justifyContent: "space-between" }]}>
                             <Text style={PostStyle.date}>Đang chỉnh sửa</Text>
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <TouchableOpacity onPress={handleEditComment}><Text style={[CommentStyle.actionButtonText, { color: "blue"}]}>Cập nhật</Text></TouchableOpacity>
-                                <TouchableOpacity onPress={() => setEditing(false)}><Text style={[CommentStyle.actionButtonText, { color: "red"}]}>Hủy</Text></TouchableOpacity></View>
+                                <TouchableOpacity onPress={handleEditComment} disabled={loading}><Text style={[CommentStyle.actionButtonText, { color: "blue" }]}>Cập nhật</Text></TouchableOpacity>
+                                <TouchableOpacity onPress={() => setEditing(false)} disabled={loading}><Text style={[CommentStyle.actionButtonText, { color: "red" }]}>Hủy</Text></TouchableOpacity></View>
                         </View>}
                     {(!editing && commentData?.interaction_count > 0) && <TouchableOpacity onPress={() => { }}><Text style={[PostStyle.m_h, PostStyle.commentDate]}>{commentData?.interaction_count} tương tác</Text></TouchableOpacity>}
                 </View>
@@ -242,13 +246,13 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                 from={optionsRef}
                 onRequestClose={() => setShowOptions(false)}
                 placement="top"
-                arrowSize={{width: 20, height: 10}}
-                popoverStyle={{backgroundColor:"#b9b9b9"}}
-                backgroundStyle={{backgroundColor:"transparent"}}
+                arrowSize={{ width: 20, height: 10 }}
+                popoverStyle={{ backgroundColor: "#b9b9b9" }}
+                backgroundStyle={{ backgroundColor: "transparent" }}
             >
                 <View style={CommentStyle.optionsBox}>
-                    { isMySelf && 
-                        <> 
+                    {isMySelf &&
+                        <>
                             <TouchableOpacity
                                 style={CommentStyle.option}
                                 onPress={() => {
@@ -259,7 +263,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                             >
                                 <Text style={[LoginStyle.buttonText, { color: "black" }]}>Chỉnh sửa</Text>
                             </TouchableOpacity>
-                            <View style={{ height: 1, backgroundColor: "#ccc", width: "90%" }} /> 
+                            <View style={{ height: 1, backgroundColor: "#ccc", width: "90%" }} />
                         </>
                     }
                     <TouchableOpacity
@@ -276,14 +280,14 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
             </Popover>
 
             <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor:"white"}}>
+                <Dialog visible={visible} onDismiss={hideDialog} style={{ backgroundColor: "white" }}>
                     <Dialog.Title>Thông báo</Dialog.Title>
                     <Dialog.Content>
                         <Text variant="bodyMedium">{msg}</Text>
                     </Dialog.Content>
                     <Dialog.Actions>
                         <TouchableOpacity onPress={handleDeleteComment}>
-                            <Text style={{ color: '#1976D2', marginRight: 20  }}>OK</Text>
+                            <Text style={{ color: '#1976D2', marginRight: 20 }}>OK</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={hideDialog}>
                             <Text style={{ color: '#1976D2' }}>Hủy</Text>

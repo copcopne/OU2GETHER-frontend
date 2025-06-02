@@ -115,7 +115,6 @@ const Profile = ({ route }) => {
     try {
       setRefreshing(true);
       await loadProfile();
-      setPost([]);
       if (page !== 1) {
         setPage(1);
       } else {
@@ -362,14 +361,14 @@ const Profile = ({ route }) => {
         nav.navigate("postDetail",
           { initialPostData: item, onUpdateSuccess: handleOnUpdatePost, onDeleteSuccess: handleOnDeletePost }
         )}>
-      <Post initialPostData={item} onUpdateSuccess={handleOnUpdatePost} onDeleteSuccess={handleOnDeletePost} />
+      <Post postData={item} onUpdateSuccess={handleOnUpdatePost} onDeleteSuccess={handleOnDeletePost} />
     </TouchableOpacity>);
   };
   return (
     <>
       <FlatList
         style={{ padding: 0 }}
-        ListFooterComponent={loading && <ActivityIndicator />}
+        ListFooterComponent={loading && <ActivityIndicator style={{margin: 10}} />}
         data={post}
         extraData={post}
         ListHeaderComponent={renderHeader}

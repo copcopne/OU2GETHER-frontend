@@ -25,7 +25,7 @@ const Search = () => {
             try {
                 setLoading(true);
 
-                let url = `${endpoints['users']}?page=${page}&kw=${searchQuery}`;
+                let url = `${endpoints['users']}?page=${page}&kw=${searchQuery}&verified=true`;
                 const token = await AsyncStorage.getItem("token");
                 const res = await authApis(token).get(url);
 
@@ -149,13 +149,13 @@ const Search = () => {
                     style={{ padding: 0 }}
                     contentContainerStyle={{
                         flexGrow: 1,
-                        paddingBottom: 20
+                        paddingBottom: 30
                     }}
                     ListFooterComponent={loading && <ActivityIndicator style={{ padding: 20 }} />}
                     ListEmptyComponent={() =>
                         <View style={{ flex: 1, alignItems: 'center', padding: 32 }}>
                             <Text style={LoginStyle.subTitle}>
-                                {(searchQuery) ? "Không có người dùng nào" : "Vui lòng nhập từ khóa để tìm kiếm"}
+                                {(searchQuery) ? "Không có người dùng nào" : "Nhập từ khóa để tìm kiếm"}
                             </Text>
                         </View>
                     }

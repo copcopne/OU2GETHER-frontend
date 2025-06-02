@@ -47,13 +47,17 @@ export const endpoints = {
     CommentInteractions: (comment_id) => `/comments/${comment_id}/interactions/`,
     replyComment: (comment_id) => `/comments/${comment_id}/reply/`,
     updateComment: (comment_id)=> `/comments/${comment_id}/update-comment/`,
+    
+    // Group
+    groups: '/groups/',
+    group: (group_id) => `/groups/${group_id}/`,
+    updateGroup: (group_id) => `/groups/${group_id}/update-group/`,
 
+    // Invite
+    sendMail: '/send-email/',
 
-
-
-
-
-
+    // Stats
+    stats: '/stats/',
 
 }
 

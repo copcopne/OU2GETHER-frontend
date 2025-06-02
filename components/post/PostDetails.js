@@ -83,6 +83,7 @@ const PostDetail = ({ route }) => {
             const token = await AsyncStorage.getItem('token');
             const res = await authApis(token).get(endpoints['post'](postData.id));
             setPostData(res.data);
+            
             if (onUpdateSuccess)
                 onUpdateSuccess(res.data);
         } catch (error) {
@@ -162,7 +163,13 @@ const PostDetail = ({ route }) => {
     };
 
     const handleDeleteComment = (commentId) => {
-        setComment(prev => prev.filter(c => c.id != commentId))
+        fetchPost();
+        setComment(prev => prev.filter(c => c.id != commentId));
+    }
+
+    const handleUpdatePost = (postData) => {
+        setPostData(postData);
+        return onUpdateSuccess(postData);
     }
 
     const handleDeletePost = (postId) => {
@@ -177,13 +184,13 @@ const PostDetail = ({ route }) => {
 
     const renderHeader = () => {
         return (<><Post 
-            initialPostData={postData} 
+            postData={postData} 
             commentInputRef={commentInputRef} 
-            onUpdateSuccess={onUpdateSuccess} 
+            onUpdateSuccess={handleUpdatePost} 
             onDeleteSuccess={handleDeletePost} 
         />
         <View style={{backgroundColor:"#f2f2f2", width:"100%"}} >
-            <Text variant="titleLarge" style={{marginLeft: "10", paddingVertical: 10, fontWeight:"bold"}}>Bình luận</Text>
+            <Text variant="titleLarge" style={{marginLeft: "10", paddingVertical: 8, fontWeight:"bold"}}>Bình luận</Text>
         </View>
         </>);
     }
@@ -215,7 +222,7 @@ const PostDetail = ({ route }) => {
                         postAuthor={postData.author}
                     />
                 )}
-                contentContainerStyle={{ paddingBottom: 32, flexGrow: 1 }}
+                contentContainerStyle={{ paddingBottom: 10, flexGrow: 1 }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}

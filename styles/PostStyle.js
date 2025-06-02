@@ -39,8 +39,8 @@ export default StyleSheet.create({
         color: "#666",
     },
     p: {
-        paddingTop: 12,
-        paddingHorizontal: 10,
+        paddingTop: 10,
+        paddingHorizontal: 8,
     },
     attachment: {
         width: "100%",

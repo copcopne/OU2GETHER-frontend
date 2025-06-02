@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Image, FlatList, RNActivityIndicator } from "react-native";
+import { Text, View, TouchableOpacity, Image, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Post from "../post/Post";
 import HomeStyle from "../../styles/Home";
@@ -28,10 +28,9 @@ const Home = () => {
 
   const [polls, setPolls] = useState([]);
   const [pollPage, setPollPage] = useState(1);
-  const [pollLoading, setPollLoading] = useState(false);
-  const [pollHasNext, setPollHasNext] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  const [pollLoading, setPollLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const listRef = useRef(null);
@@ -40,7 +39,7 @@ const Home = () => {
   };
 
   const fetchPolls = async () => {
-    if (!pollHasNext) return;
+    if (pollPage === 0) return;
     try {
       setPollLoading(true);
       const token = await AsyncStorage.getItem("token");
@@ -55,7 +54,7 @@ const Home = () => {
         setPolls((prev) => [...prev, ...unique]);
       }
       if (res.data.next === null) {
-        setPollHasNext(false);
+        setPollPage(0);
       }
     } catch (error) {
       console.error(error);
@@ -84,6 +83,7 @@ const Home = () => {
       }
 
       const url = `${baseUrl}?${params.join("&")}`;
+      
       const token = await AsyncStorage.getItem("token");
       const res = await authApis(token).get(url);
 
@@ -104,12 +104,12 @@ const Home = () => {
           setFollowingPost((prev) => [...prev, ...unique]);
         }
       }
-      
+
       if (res.data.next === null) {
         if (selectedTab === "all") setPage(0);
         else setPageFollowing(0);
       }
-      
+
     } catch (error) {
       console.error(error);
       setSnackbar({
@@ -141,40 +141,43 @@ const Home = () => {
 
   useEffect(() => {
     if (selectedTab === "all") {
-      if(pollHasNext) 
+      if (pollPage > 0)
         fetchPolls();
     }
-  }, [selectedTab, pollHasNext]);
+  }, [selectedTab, pollPage]);
 
   const fetchMore = () => {
     if (loading || refreshing) return;
-    if (selectedTab === "all" && page > 0 && posts.length > 0) {
+    if (selectedTab === "all" && page > 0) {
       setPage((prev) => prev + 1);
     } else if (
       selectedTab === "following" &&
-      pageFollowing > 0 &&
-      followingPost.length > 0
+      pageFollowing > 0
     ) {
       setPageFollowing((prev) => prev + 1);
     }
   };
 
+  const fetchMorePoll = () => {
+    if (pollLoading || pollPage === 0) return;
+    setPollPage((prev) => prev + 1);
+  }
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
       if (selectedTab === "all") {
-        setPolls([]);
-        setPollPage(1);
-        setPollHasNext(true);
-        await fetchPolls();
+        if (pollPage === 1)
+          await fetchPolls();
+        else setPollPage(1);
 
-        setPosts([]);
-        setPage(1);
-        await fetchPosts();
+        if (page === 1)
+          await fetchPosts();
+        else setPage(1);
       } else {
-        setFollowingPost([]);
-        setPageFollowing(1);
-        await fetchPosts();
+        if (pageFollowing === 1)
+          await fetchPosts();
+        else setPageFollowing(1);
       }
     } catch (error) {
       console.error(error);
@@ -228,7 +231,7 @@ const Home = () => {
         }
       >
         <Post
-          initialPostData={item}
+          postData={item}
           onUpdateSuccess={handleOnUpdatePost}
           onDeleteSuccess={handleOnDeletePost}
         />
@@ -280,21 +283,13 @@ const Home = () => {
               keyExtractor={(item) => `poll-${item.id}`}
               renderItem={renderPollItem}
               showsHorizontalScrollIndicator={false}
-              onEndReached={() => {
-                if (!pollLoading && pollHasNext) {
-                  setPollPage((prev) => prev + 1);
-                }
-              }}
+              onEndReached={fetchMorePoll}
               onEndReachedThreshold={0.5}
               ListFooterComponent={
-                pollLoading ? (
-                  <RNActivityIndicator
-                    style={{ marginRight: 8 }}
-                    size="small"
-                  />
-                ) : null
-              }
-              contentContainerStyle={{ paddingHorizontal: 12}}
+                pollLoading && <View style={{ width: "50", }}>
+                  <ActivityIndicator style={{ marginRight: 8 }} size="small" />
+                </View>}
+              contentContainerStyle={{ paddingHorizontal: 12, alignItems: "center" }}
             />
           </View>
         )}
@@ -325,7 +320,7 @@ const Home = () => {
         }
       >
         <Post
-          initialPostData={item}
+          postData={item}
           onUpdateSuccess={handleOnUpdatePost}
           onDeleteSuccess={handleOnDeletePost}
         />
@@ -380,7 +375,7 @@ const Home = () => {
         style={{ padding: 0 }}
         ref={listRef}
         ListHeaderComponent={renderHeader}
-        ListFooterComponent={loading && <ActivityIndicator />}
+        ListFooterComponent={loading && <ActivityIndicator style={{margin: 10}} />}
         ListEmptyComponent={() => (
           <View style={{ flex: 1, padding: 32, alignItems: "center" }}>
             <Text style={LoginStyle.subTitle}>Không có bài viết</Text>
