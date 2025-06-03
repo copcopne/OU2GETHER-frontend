@@ -34,6 +34,7 @@ import Search from './components/profile/Search';
 import AllChats from './components/chat/AllChats';
 import Constants from 'expo-constants';
 import CreateGroup from './components/setting/CreateGroup';
+import Interactions from './components/post/Interactions';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -41,10 +42,14 @@ const AuthNavigator = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='anonymous'>
       <Stack.Screen name="anonymous" component={Anonymous} options={{ title: "Chào mừng bạn đến với OU2GETHER" }} />
       <Stack.Screen name="login" component={Login} options={{ title: "Đăng nhập" }} />
-      <Stack.Screen name="register" component={Register} options={{ title: "Đăng ký tài khoản", headerShown: true,
-          headerBackTitleVisible: false }} />
-      <Stack.Screen name="changePassword" component={ChangePassword} options={{ title: "Đổi mật khẩu", headerShown: true,
-          headerBackTitleVisible: false }} />
+      <Stack.Screen name="register" component={Register} options={{
+        title: "Đăng ký tài khoản", headerShown: true,
+        headerBackTitleVisible: false
+      }} />
+      <Stack.Screen name="changePassword" component={ChangePassword} options={{
+        title: "Đổi mật khẩu", headerShown: true,
+        headerBackTitleVisible: false
+      }} />
     </Stack.Navigator>
   );
 }
@@ -62,6 +67,10 @@ const HomeStack = () => {
           headerBackTitleVisible: false
         }} />
       <Stack.Screen
+        name="post"
+        component={PostStack}
+        options={{ title: "Bài viết" }} />
+      <Stack.Screen
         name="postDetail"
         component={PostDetail}
         options={{
@@ -77,7 +86,7 @@ const HomeStack = () => {
           headerShown: true,
           headerBackTitleVisible: false
         }} />
-        <Stack.Screen
+      <Stack.Screen
         name="allChats"
         component={AllChats}
         options={{
@@ -88,6 +97,24 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
+const PostStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="postStack"
+        component={Post}
+        options={{ title: "Bài viết" }} />
+      <Stack.Screen
+        name="interactions"
+        component={Interactions}
+        options={{
+          title: "Lượt tương tác",
+          headerShown: true,
+          headerBackTitleVisible: false,
+        }} />
+    </Stack.Navigator>
+  );
+}
 const ProfileStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -107,7 +134,6 @@ const ProfileStack = () => {
           headerShown: true,
           headerBackTitleVisible: false
         }} />
-      <Stack.Screen name="post" component={Post} options={{ title: "Bài viết" }} />
       <Stack.Screen
         name="postDetail"
         component={PostDetail}
@@ -122,7 +148,7 @@ const ProfileStack = () => {
 const SearchStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="searchStack" component={Search}/>
+      <Stack.Screen name="searchStack" component={Search} />
       <Stack.Screen
         name="profileStack"
         component={Profile}
@@ -236,7 +262,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen name="home" component={HomeStack} />
       <Tab.Screen name="search" component={SearchStack} />
-      <Tab.Screen name="plus" component={Empty} options={{ tabBarButton: () => <CreatePostModal /> }}/>
+      <Tab.Screen name="plus" component={Empty} options={{ tabBarButton: () => <CreatePostModal /> }} />
       <Tab.Screen name="profile" component={ProfileStack} />
       <Tab.Screen name="setting" component={SettingStack} />
     </Tab.Navigator>

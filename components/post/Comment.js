@@ -9,12 +9,13 @@ import LoginStyle from '../../styles/LoginStyle';
 import { SnackbarContext, UserContext } from '../../configs/Contexts';
 import { Dialog, Portal } from 'react-native-paper';
 import CommentStyle from '../../styles/CommentStyle';
+import { useNavigation } from '@react-navigation/native';
 const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
 
     const [commentData, setCommentData] = useState(initialCommentData);
 
     const reactions = [
-        { type: 'like', icon: '👍', label: 'Đã Thích', color: "#3C3CCC" },
+        { type: 'like', icon: '👍', label: 'Đã Thích', color: "#1c85fc" },
         { type: 'love', icon: '💖', label: 'Yêu thích', color: "#CC99A2" },
         { type: 'haha', icon: '😆', label: 'Haha', color: "#ffb02e" },
         { type: 'wow', icon: '😯', label: 'Wow', color: "#ffb02e" },
@@ -42,6 +43,8 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
     const showDialog = () => setVisible(true);
     const hideDialog = () => setVisible(false);
     const [msg, setMsg] = useState('');
+
+    const nav = useNavigation();
 
     const sendReaction = async (type) => {
         try {
@@ -150,7 +153,7 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                 message: "Xóa thành công!",
                 type: "success",
             });
-            
+
             onDeleteSuccess(commentData.id);
         } catch (error) {
             let msg;
@@ -212,7 +215,20 @@ const Comment = ({ postAuthor, initialCommentData, onDeleteSuccess }) => {
                                 <TouchableOpacity onPress={handleEditComment} disabled={loading}><Text style={[CommentStyle.actionButtonText, { color: "blue" }]}>Cập nhật</Text></TouchableOpacity>
                                 <TouchableOpacity onPress={() => setEditing(false)} disabled={loading}><Text style={[CommentStyle.actionButtonText, { color: "red" }]}>Hủy</Text></TouchableOpacity></View>
                         </View>}
-                    {(!editing && commentData?.interaction_count > 0) && <TouchableOpacity onPress={() => { }}><Text style={[PostStyle.m_h, PostStyle.commentDate]}>{commentData?.interaction_count} tương tác</Text></TouchableOpacity>}
+                    {(!editing && commentData?.interaction_count > 0) &&
+                        <TouchableOpacity onPress={() => nav.navigate("post", {
+                            screen: "interactions",
+                            params: {
+                                objectId: commentData.id,
+                                isComment: true,
+                                interactionTypes: commentData.interactions
+                            }
+                        })}>
+                            <Text style={[PostStyle.m_h, PostStyle.commentDate]}>
+                                {commentData?.interaction_count} tương tác
+                            </Text>
+                        </TouchableOpacity>
+                    }
                 </View>
             </View>
 

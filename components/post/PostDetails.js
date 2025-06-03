@@ -20,12 +20,9 @@ dayjs.locale('vi');
 
 const PostDetail = ({ route }) => {
     const insets = useSafeAreaInsets();
-    const { initialPostData } = route.params || {}
+    const { initialPostData, onUpdateSuccess, onDeleteSuccess, commenting = false } = route.params || {}
     const [postData, setPostData] = useState(initialPostData);
-    const { onUpdateSuccess } = route.params || {}
-    const { onDeleteSuccess } = route.params || {}
     const { setSnackbar } = useContext(SnackbarContext);
-    const { commenting } = route.params || {}
     const [comment, setComment] = useState([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);

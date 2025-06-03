@@ -30,6 +30,6 @@ export default StyleSheet.create({
     commentContainer: {
         padding: 8,
         borderColor: "#f2f2f2", 
-        borderBottomWidth: 2
+        borderBottomWidth: 1
     }
 });

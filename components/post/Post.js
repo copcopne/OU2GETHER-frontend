@@ -28,7 +28,7 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
     const [loading, setLoading] = useState(false);
 
     const reactions = [
-        { type: 'like', icon: '👍', label: 'Đã Thích', color: "#3C3CCC" },
+        { type: 'like', icon: '👍', label: 'Đã Thích', color: "#1c85fc" },
         { type: 'love', icon: '💖', label: 'Yêu thích', color: "#CC99A2" },
         { type: 'haha', icon: '😆', label: 'Haha', color: "#ffb02e" },
         { type: 'wow', icon: '😯', label: 'Wow', color: "#ffb02e" },
@@ -178,7 +178,7 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                     msg = "Lựa chọn bạn đã chọn không còn nữa!";
                     const token = await AsyncStorage.getItem("token");
                     const result = await authApis(token).get(endpoints['post'](postData.id));
-                    
+
                     if (onUpdateSuccess)
                         onUpdateSuccess(result.data);
                 } else {
@@ -240,7 +240,7 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                 type: "success",
             });
 
-            if(onDeleteSuccess)
+            if (onDeleteSuccess)
                 onDeleteSuccess(postData.id);
         } catch (error) {
             let msg;
@@ -376,7 +376,21 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                 </Card>
             }
             <View style={[PostStyle.r, PostStyle.stats]}>
-                {postData?.interaction_count > 0 ? <TouchableOpacity onPress={() => { }}><Text style={[PostStyle.m_h, PostStyle.date]}>{postData?.interaction_count} tương tác</Text></TouchableOpacity> : <View></View>}
+                {postData?.interaction_count > 0 ?
+                    <TouchableOpacity
+                        onPress={() => nav.navigate("post", {
+                            screen: "interactions",
+                            params: {
+                                objectId: postData.id,
+                                interactionTypes: postData.interactions
+                            },
+                        })}>
+                        <Text style={[PostStyle.m_h, PostStyle.date]}>
+                            {postData?.interaction_count} tương tác
+                        </Text>
+                    </TouchableOpacity>
+                    : <View></View>
+                }
                 {postData?.comment_count > 0 ? <Text style={[PostStyle.m_h, PostStyle.date]}>{postData?.comment_count} bình luận</Text> : null}
                 {postData?.share_count > 0 ? <Text style={[PostStyle.m_h, PostStyle.date]}>{postData?.share_count} chia sẻ</Text> : null}
             </View>
@@ -419,19 +433,19 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                     {reactionDisplay.icon ? (
                         <>
                             <IconButton icon={reactionDisplay.icon} size={20} />
-                            <Text style={{ color: reactionDisplay.color }}>{reactionDisplay.label}</Text>
+                            <Text style={{ color: reactionDisplay.color, fontWeight:"bold" }}>{reactionDisplay.label}</Text>
                         </>
                     ) : (
                         <>
                             <Text style={{ fontSize: 20, paddingVertical: 6 }}>{reactionDisplay.emoji}</Text>
-                            <Text style={{ marginLeft: 10, color: reactionDisplay.color, fontWeight: "600" }}>{reactionDisplay.label}</Text>
+                            <Text style={{ marginLeft: 10, color: reactionDisplay.color, fontWeight: "bold" }}>{reactionDisplay.label}</Text>
                         </>
                     )}
                 </TouchableOpacity>
 
                 {postData?.can_comment ? <TouchableOpacity style={[PostStyle.r, PostStyle.button]} onPress={() => !commentInputRef ? nav.navigate('postDetail', { initialPostData: postData, commenting: true }) : commentInputRef.current.focus()}>
                     <IconButton icon="comment" size={20} />
-                    <Text>Bình luận</Text>
+                    <Text style={{fontWeight:"bold"}}>Bình luận</Text>
                 </TouchableOpacity> : null}
             </View>
 
@@ -443,7 +457,7 @@ const Post = ({ postData, commentInputRef, onDeleteSuccess, onUpdateSuccess }) =
                     </Dialog.Content>
                     <Dialog.Actions>
                         <TouchableOpacity onPress={handleDeletePost}>
-                            <Text style={{ color: '#1976D2', marginRight: 20  }}>OK</Text>
+                            <Text style={{ color: '#1976D2', marginRight: 20 }}>OK</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={hideDialog}>
                             <Text style={{ color: '#1976D2' }}>Hủy</Text>

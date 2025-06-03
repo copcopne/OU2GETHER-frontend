@@ -151,12 +151,19 @@ const Profile = ({ route }) => {
       });
 
       if (!result.canceled) {
+        setLoading(true);
+        setSnackbar({
+          visible: true,
+          message: `Đang cập nhật...`,
+          type: "success",
+        })
         let form = new FormData();
         form.append(type, {
           uri: result.assets[0].uri,
           name: result.assets[0].fileName,
           type: result.assets[0].mimeType,
         });
+
         let token = await AsyncStorage.getItem("token");
         let res = await authApis(token).patch(endpoints["currentUser"], form, {
           headers: {
@@ -164,58 +171,38 @@ const Profile = ({ route }) => {
             "content-Type": "multipart/form-data",
           },
         });
-        if (res.status === 200) {
-          setSnackbar({
-            visible: true,
-            message: `Cập nhật thành công!`,
-            type: "success",
-          });
-          let updated = await authApis(token).get(endpoints["currentUser"]);
-          if (updated.status === 200)
-            dispatch({
-              type: "update",
-              payload: updated.data,
-            });
-        } else {
-          setSnackbar({
-            visible: true,
-            message: `Lỗi ${res.status} khi thực hiện cập nhật ${type === "avatar" ? "Ảnh đại diện" : "Ảnh bìa"
-              }`,
-            type: "error",
-          });
-        }
+        dispatch({
+          type: "update",
+          payload: res.data,
+        });
+
+        setSnackbar({
+          visible: true,
+          message: `Cập nhật thành công!`,
+          type: "success",
+        })
       }
     } catch (error) {
-      console.error("Error picking image:", error);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleFollow = async () => {
-    const token = await AsyncStorage.getItem("token");
-    const res = await authApis(token).post(endpoints["followUser"](userId));
-    if (res.status === 200) {
-      setProfileData({
-        ...profileData,
-        is_following: !profileData.is_following,
-        number_of_followers: profileData.is_following
-          ? profileData.number_of_followers - 1
-          : profileData.number_of_followers + 1,
-      });
-      setMinimalFollowers((prev) => {
-        const exists = prev.some((u) => u.username === currentUser.username);
-        if (exists) {
-          return prev.filter((u) => u.id !== currentUser.id);
-        } else {
-          return [...prev, currentUser];
-        }
-      });
+    try {
+      const token = await AsyncStorage.getItem("token");
+      await authApis(token).post(endpoints["followUser"](userId));
+      await loadProfile();
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const renderHeader = () => {
     return (
       <>
-        <TouchableOpacity onPress={profileData?.is_myself ? () => showUploadAlert("cover") : null}>
+        <TouchableOpacity disabled={loading} onPress={profileData?.is_myself ? () => showUploadAlert("cover") : null}>
           <Image
             style={ProfileStyle.cover}
             source={
@@ -226,7 +213,7 @@ const Profile = ({ route }) => {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={profileData?.is_myself ? () => showUploadAlert("avatar") : null}>
+        <TouchableOpacity disabled={loading} onPress={profileData?.is_myself ? () => showUploadAlert("avatar") : null}>
           <Image
             style={ProfileStyle.avatar}
             source={
@@ -258,6 +245,7 @@ const Profile = ({ route }) => {
 
             <TouchableOpacity
               style={[ProfileStyle.followerAvatarContainer, ProfileStyle.m]}
+              onPress={() => {}}
             >
               {profileData.number_of_followers > 0 &&
                 minimalFollowers.map((follower, index) => {
@@ -282,7 +270,7 @@ const Profile = ({ route }) => {
                 style={[
                   ProfileStyle.followersText,
                   profileData.number_of_followers > 0
-                    && { marginLeft: 10 }
+                  && { marginLeft: 10 }
                 ]}
               >
                 {profileData.number_of_followers} người theo dõi
@@ -368,7 +356,7 @@ const Profile = ({ route }) => {
     <>
       <FlatList
         style={{ padding: 0 }}
-        ListFooterComponent={loading && <ActivityIndicator style={{margin: 10}} />}
+        ListFooterComponent={loading && <ActivityIndicator style={{ margin: 10 }} />}
         data={post}
         extraData={post}
         ListHeaderComponent={renderHeader}
