@@ -54,6 +54,25 @@ const AuthNavigator = () => {
   );
 }
 
+const PostStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="postStack"
+        component={Post}
+        options={{ title: "Bài viết" }} />
+      <Stack.Screen
+        name="interactions"
+        component={Interactions}
+        options={{
+          title: "Lượt tương tác",
+          headerShown: true,
+          headerBackTitleVisible: false,
+        }} />
+    </Stack.Navigator>
+  );
+}
+
 const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -97,24 +116,6 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
-const PostStack = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="postStack"
-        component={Post}
-        options={{ title: "Bài viết" }} />
-      <Stack.Screen
-        name="interactions"
-        component={Interactions}
-        options={{
-          title: "Lượt tương tác",
-          headerShown: true,
-          headerBackTitleVisible: false,
-        }} />
-    </Stack.Navigator>
-  );
-}
 const ProfileStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -126,6 +127,10 @@ const ProfileStack = () => {
           headerShown: route.params?.showHeader === true,
           headerBackTitleVisible: false
         })} />
+      <Stack.Screen
+        name="post"
+        component={PostStack}
+        options={{ title: "Bài viết" }} />
       <Stack.Screen
         name="createPost"
         component={CreatePost}
