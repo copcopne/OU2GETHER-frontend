@@ -51,7 +51,6 @@ export const endpoints = {
     // Group
     groups: '/groups/',
     group: (group_id) => `/groups/${group_id}/`,
-    updateGroup: (group_id) => `/groups/${group_id}/update-group/`,
 
     // Invite
     sendMail: '/send-email/',

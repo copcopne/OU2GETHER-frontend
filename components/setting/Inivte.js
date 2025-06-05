@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { FlatList, Image, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Touchable, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator, Button, Checkbox, Menu, Searchbar, Text, TextInput } from "react-native-paper";
 import { authApis, endpoints } from "../../configs/Apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -174,7 +174,7 @@ const Invite = () => {
                     ...payload,
                     recipients: recipients
                 }
-                console.log(payload);
+            console.log(payload);
             await authApis(token).post(endpoints['sendMail'], payload);
             await authApis(token).post(endpoints['posts'], {
                 content: `${subject}\n\n\t${content}`
@@ -237,7 +237,7 @@ const Invite = () => {
             );
         }
         return (
-            <View
+            <TouchableOpacity
                 style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -248,12 +248,13 @@ const Invite = () => {
                     borderBottomWidth: 1,
                     borderColor: "#eee",
                 }}
+                onPress={() => nav.navigate("groupDetail",{ groupId: item.id, groupName: item.name })}
             >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text style={{ fontSize: 16 }}>{item.name} ({item.member_count} thành viên)</Text>
+                    <Text style={{ fontSize: 16 }}>{item.name} (ID: {item.id}, {item.member_count} thành viên)</Text>
                 </View>
                 <Checkbox status={isChecked ? "checked" : "unchecked"} onPress={toggleParticipant} />
-            </View>
+            </TouchableOpacity>
         );
     };
 

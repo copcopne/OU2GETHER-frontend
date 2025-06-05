@@ -35,6 +35,7 @@ import AllChats from './components/chat/AllChats';
 import Constants from 'expo-constants';
 import CreateGroup from './components/setting/CreateGroup';
 import Interactions from './components/post/Interactions';
+import GroupDetail from './components/setting/GroupDetail';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -180,6 +181,12 @@ const InivteStack = () => {
         options={{
           title: "Tạo nhóm mới"
         }} />
+      <Stack.Screen
+        name="groupDetail"
+        component={GroupDetail}
+        options={{
+          title: "Chi tiết nhóm"
+        }} />
     </Stack.Navigator>)
 }
 const SettingStack = () => {
@@ -246,7 +253,8 @@ const MainNavigator = () => {
             left: 0,
             right: 0,
             elevation: 0,
-            backgroundColor: "#f2f2f2",
+            backgroundColor: "#F7F7F7",
+            paddingTop: 5,
             borderTopWidth: 0
           },
           tabBarIcon: ({ focused, color, size }) => {
@@ -259,7 +267,7 @@ const MainNavigator = () => {
 
             if (route.name === 'plus') return null;
 
-            return <Icon source={iconName} size={30} color={focused ? '#0865fe' : '#888'} />;
+            return <Icon source={iconName} size={32} color={focused ? '#0865fe' : '#888'} />;
           }
         };
       }}

@@ -149,10 +149,10 @@ const CreatePostModal = () => {
     }, [isSheetOpen]);
 
     return (<View style={{ position: "relative" }}>
-        <View style={{ backgroundColor: "#f2f2f2", position: "absolute", left: "7%", top: -15, borderRadius: 100 }}>
-            <TouchableOpacity style={{ marginTop: 5, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
-                <Icon size={30} source="plus-circle" color="#2F2F2F" />
-                <Text style={{ fontSize: 12, fontWeight: 700, color: "#2F2F2F" }}>Tạo bài viết</Text>
+        <View style={{backgroundColor:"#F7F7F7", position: "absolute", top: -25, borderRadius: 40, width: 80, height: 80}}>
+            <TouchableOpacity style={{ marginTop: 3, justifyContent: "center", alignItems: "center" }} onPress={handleAddButtonPress}>
+                <Icon size={40} source="plus-circle" color="#2F2F2F" />
+                <Text style={{ fontSize: 13, fontWeight: 700, color: "#2F2F2F" }}>Tạo bài viết</Text>
             </TouchableOpacity>
         </View>
         <Portal>
