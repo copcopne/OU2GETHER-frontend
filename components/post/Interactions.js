@@ -68,15 +68,18 @@ const Interactions = ({ route }) => {
             const res = await authApis(token).post(endpoints["followUser"](userId));
             const updatedUser = res.data;
 
-            setUsers((prev) =>
-                prev.map((u) => {
-                    if (u.id === updatedUser.id) {
+            setData((prev) =>
+                prev.map((item) => {
+                    if (item.user.id === updatedUser.id) {
                         return {
-                            ...u,
-                            ...updatedUser,
+                            ...item,
+                            user: {
+                                ...item.user,
+                                ...updatedUser,
+                            },
                         };
                     }
-                    return u;
+                    return item;
                 })
             );
         } catch (error) {
@@ -114,6 +117,7 @@ const Interactions = ({ route }) => {
     const renderItem = ({ item }) => {
         const matchedTab = tabs.find((tab) => tab.type === item.reaction);
         const emoji = matchedTab && matchedTab.icon;
+
         return (
             <TouchableOpacity
                 style={{
@@ -134,12 +138,12 @@ const Interactions = ({ route }) => {
                 }
             >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <View style={{position:"relative"}}>
-                    <Image
-                        source={{ uri: item.user.avatar }}
-                        style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
-                    />
-                    <View style={{position:"absolute", right: 5, bottom: 0,backgroundColor:"white", width: 20, borderRadius:10, justifyContent:"center", alignItems:"center"}}><Text>{emoji}</Text></View>
+                    <View style={{ position: "relative" }}>
+                        <Image
+                            source={{ uri: item.user.avatar }}
+                            style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
+                        />
+                        <View style={{ position: "absolute", right: 5, bottom: 0, backgroundColor: "white", width: 20, borderRadius: 10, justifyContent: "center", alignItems: "center" }}><Text>{emoji}</Text></View>
                     </View>
                     <Text style={{ fontSize: 16 }}>
                         {item.user.last_name} {item.user.first_name}
@@ -160,28 +164,28 @@ const Interactions = ({ route }) => {
     };
     return (
         <View>
-            <FlatList 
-            data={filteredTabs}
-            keyExtractor={(item) => item.label}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            style={{backgroundColor:"white"}}
-            renderItem={({ item }) => (
-            <TouchableOpacity
-                    onPress={() => setSelectedTab(item)}
-                    style={[selectedTab.type === item.type && {borderBottomWidth: 3, borderBottomColor: item.color}
-                    ]}
-                >
-                    <Text
-                        style={[
-                            HomeStyle.tabText,
-                            selectedTab.type === item.type && HomeStyle.tabTextActive,
-                            selectedTab.type === item.type && {color: item.color},
+            <FlatList
+                data={filteredTabs}
+                keyExtractor={(item) => item.label}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                style={{ backgroundColor: "white" }}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        onPress={() => setSelectedTab(item)}
+                        style={[selectedTab.type === item.type && { borderBottomWidth: 3, borderBottomColor: item.color }
                         ]}
                     >
-                        {item.label}
-                    </Text>
-                </TouchableOpacity>)}
+                        <Text
+                            style={[
+                                HomeStyle.tabText,
+                                selectedTab.type === item.type && HomeStyle.tabTextActive,
+                                selectedTab.type === item.type && { color: item.color },
+                            ]}
+                        >
+                            {item.label}
+                        </Text>
+                    </TouchableOpacity>)}
 
             />
 

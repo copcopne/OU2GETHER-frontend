@@ -39,7 +39,7 @@ const ChangePassword = ({ route }) => {
     });
     const [passwordData, setPasswordData] = useState({});
     const inputRefs = useRef({});
-    const isLast = (index) => index === info.length - 1;
+    const isLast = (index) => index === fields.length - 1;
 
     const showDialog = () => setVisible(true);
     const hideDialog = () => setVisible(false);
@@ -79,22 +79,22 @@ const ChangePassword = ({ route }) => {
                 setLoading(true);
                 let token;
                 let authData;
-                if (!forceChangePassword) {
-                    const payload = qs.stringify({
-                        grant_type: 'password',
-                        username: userdata.username,
-                        password: passwordData.oldPassword,
-                        client_id: Constants.expoConfig.extra.client_id
-                    });
-                    authData = (await Apis.post(endpoints['login'], payload)).data;
-                    token = authData.access_token;
-                } else token = await AsyncStorage.getItem("token");
+                let p = forceChangePassword ? Constants.expoConfig.extra.defaultPassword : passwordData.oldPassword;
+
+                const payload = qs.stringify({
+                    grant_type: 'password',
+                    username: userdata.username,
+                    password: p,
+                    client_id: Constants.expoConfig.extra.client_id
+                });
+                authData = (await Apis.post(endpoints['login'], payload)).data;
+                token = authData.access_token;
 
                 let res = await authApis(token).patch(endpoints['currentUser'], passwordData);
                 await AsyncStorage.setItem("token", token);
                 if (authData) await AsyncStorage.setItem("refesh", authData.refresh_token);
 
-                setMsg(`Thay đổi mật khẩu thành công! ${!forceChangePassword && "\nVui lòng đăng nhập lại để có hiệu lực"}`);
+                setMsg(`Thay đổi mật khẩu thành công! ${!forceChangePassword ? "\nVui lòng đăng nhập lại để có hiệu lực" : ""}`);
                 setPostAction(() => () => {
                     if (forceChangePassword) {
                         dispatch({
@@ -114,7 +114,7 @@ const ChangePassword = ({ route }) => {
                     showDialog();
                 }
                 else {
-                    setMsg(error);
+                    setMsg(error?.response?.data?.detail || error.message || "Đã có lỗi xảy ra!");
                     showDialog();
                 }
             } finally {
@@ -155,7 +155,7 @@ const ChangePassword = ({ route }) => {
                             returnKeyType={isLast(idx) ? "done" : "next"}
                             onSubmitEditing={() => {
                                 if (!isLast(idx)) {
-                                    const nextField = info[idx + 1].field;
+                                    const nextField = fields[idx + 1].field;
                                     inputRefs.current[nextField]?.focus();
                                 } else {
                                     updatePassword();
