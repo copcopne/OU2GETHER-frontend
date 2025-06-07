@@ -116,18 +116,24 @@ const Register = () => {
           if (key === "avatar") {
             form.append(key, {
               uri: newUser.avatar.uri,
-              name: newUser.avatar.fileName,
-              type: `${newUser.avatar.type}/${newUser.avatar.fileName.split(".").pop()}`,
+              name: newUser.avatar.fileName || 'avatar.jpg',
+              type: newUser.avatar.mimeType || 'image/jpeg',
+            });
+          } else if (key === "cover") {
+            form.append(key, {
+              uri: newUser.cover.uri,
+              name: newUser.cover.fileName || 'cover.jpg',
+              type: newUser.cover.mimeType || 'image/jpeg',
             });
           } else {
             form.append(key, newUser[key]);
           }
         }
       }
-      let res = await Apis.post(endpoints['register'], form, {
+      await Apis.post(endpoints['register'], form, {
         headers: {
           "accept": 'application/json',
-          "content-Type": "multipart/form-data"
+          "content-Type": "multipart/form-data",
         }
       });
 
