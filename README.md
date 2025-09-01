@@ -39,8 +39,8 @@ This repository contains the **frontend** built with **React Native + Expo**, in
 
 ```bash
 # Clone repo
-git clone https://github.com/<your-org>/copcopne-ou2gether-frontend.git
-cd copcopne-ou2gether-frontend
+git clone https://github.com/copcopne/OU2GETHER-frontend.git
+cd OU2Gether-frontend
 
 # Install dependencies
 npm install
