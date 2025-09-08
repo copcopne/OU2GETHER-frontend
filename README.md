@@ -35,6 +35,16 @@ This repository contains the **frontend** built with **React Native + Expo**, in
 
 ---
 
+## ❗ Pre-installation
+
+Before running this frontend, please make sure to set up and run the **backend server** first.  
+You can find the backend repository here: [OU2GETHER Backend](https://github.com/copcopne/OU2GETHER-backend)
+
+Follow the backend setup guide in its README to configure the database, environment variables, and start the API server.  
+Once the backend is running, you can continue with the frontend installation steps below.
+
+---
+
 ## 📦 Installation & Running
 
 ```bash
